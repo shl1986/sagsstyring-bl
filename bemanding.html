@@ -1,0 +1,678 @@
+<title>Bemandingsplan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap">
+<style>
+/* Sticky-header planning grid — same visual language as sagstyring */
+:root {
+  --red:      #B81C2B;
+  --red-dark: #8e1520;
+  --red-light:#fce8ea;
+  --bg:       #f4f1ec;
+  --surface:  #faf8f4;
+  --text:     #1a2024;
+  --muted:    #6b7a8d;
+  --border:   #ddd8ce;
+  --ok:       #2d6a4f;
+  --ok-bg:    #d8f3dc;
+  --warn:     #92510a;
+  --warn-bg:  #fef3cd;
+  --over:     #B81C2B;
+  --over-bg:  #fce8ea;
+  --mu:       #1e40af;  --mu-bg: #dbeafe;
+  --to:       #065f46;  --to-bg: #d1fae5;
+  --ma:       #6b21a8;  --ma-bg: #ede9fe;
+  --kl:       #92510a;  --kl-bg: #fef3cd;
+  --radius:   4px;
+  --r-lg:     8px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#18181b; --surface:#1f1f23; --text:#e8e4dc; --muted:#8a94a0; --border:#2e2e34;
+    --ok-bg:#0d2b1e; --warn-bg:#2b1f06; --over-bg:#2b0a0e;
+    --mu-bg:#0f1e3d; --to-bg:#052414; --ma-bg:#1c0a38; --kl-bg:#2b1f06;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#18181b; --surface:#1f1f23; --text:#e8e4dc; --muted:#8a94a0; --border:#2e2e34;
+  --ok-bg:#0d2b1e; --warn-bg:#2b1f06; --over-bg:#2b0a0e;
+  --mu-bg:#0f1e3d; --to-bg:#052414; --ma-bg:#1c0a38; --kl-bg:#2b1f06;
+  color-scheme: dark;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
+  font-size:14px;display:flex;flex-direction:column;
+  padding-left:max(0px,env(safe-area-inset-left,0px));
+  padding-right:max(0px,env(safe-area-inset-right,0px));
+  padding-block:0;
+}
+
+/* HEADER */
+header{
+  background:var(--red);height:60px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 1.5rem;flex-shrink:0;
+  position:sticky;top:0;z-index:200;
+}
+.logo{font-family:'DM Serif Display',serif;color:#fff;font-size:1.05rem;font-weight:400}
+.logo span{opacity:.6;font-size:.85rem;margin-left:6px}
+.header-right{display:flex;align-items:center;gap:10px}
+.user-pill{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);
+  color:#fff;font-size:.75rem;padding:4px 11px;border-radius:20px;
+}
+.btn-ghost{
+  background:none;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.85);
+  font-size:.75rem;padding:4px 11px;border-radius:var(--radius);cursor:pointer;font-family:inherit;
+}
+
+/* TOOLBAR */
+.toolbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:.75rem 1.5rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;
+  flex-shrink:0;
+}
+.filter-select{
+  font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;
+  padding:7px 28px 7px 10px;border-radius:var(--radius);cursor:pointer;
+  border:1px solid var(--border);background:var(--bg);color:var(--text);
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7a8d'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center;
+  min-width:140px;
+}
+.filter-select:focus{outline:none;border-color:var(--red)}
+.toolbar h1{font-family:'DM Serif Display',serif;font-size:1.3rem;font-weight:400;flex:1;min-width:0}
+.btn{
+  font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;
+  padding:7px 14px;border-radius:var(--radius);cursor:pointer;border:none;white-space:nowrap;
+}
+.btn-primary{background:var(--red);color:#fff}
+.btn-primary:hover{background:var(--red-dark)}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--red);color:var(--red)}
+
+/* LEGEND */
+.legend{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.leg{display:flex;align-items:center;gap:5px;font-size:.72rem;font-weight:500}
+.leg-dot{width:10px;height:10px;border-radius:2px}
+
+/* SCROLL WRAPPER */
+.scroll-wrap{flex:1;overflow:auto;padding:1.25rem 1.5rem 2rem}
+
+/* TABLE */
+.plan-table{border-collapse:collapse;white-space:nowrap;width:100%;font-variant-numeric:tabular-nums}
+.plan-table th,.plan-table td{padding:0;border:0}
+
+/* Sticky columns */
+.col-nr  {position:sticky;left:0;z-index:10;min-width:72px;max-width:72px}
+.col-ovs {position:sticky;left:72px;z-index:10;min-width:140px;max-width:180px}
+.col-ans {position:sticky;left:252px;z-index:10;min-width:90px}
+
+/* Header rows */
+.thead-top th,.thead-fag th{background:var(--surface);border-bottom:1px solid var(--border)}
+
+/* Week group header */
+.th-week{
+  text-align:center;font-size:.7rem;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);padding:6px 4px 4px;
+  border-left:2px solid var(--border);
+}
+.th-week.current{color:var(--red);border-top:2px solid var(--red)}
+
+/* Fag sub-header */
+.th-fag{
+  text-align:center;font-size:.65rem;font-weight:600;letter-spacing:.05em;
+  text-transform:uppercase;padding:3px 6px 5px;border-left:1px solid var(--border);
+  min-width:48px;
+}
+.th-mu{color:var(--mu)} .th-to{color:var(--to)} .th-ma{color:var(--ma)} .th-kl{color:var(--kl)}
+
+/* Total fag header */
+.th-total-group{text-align:center;font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:6px 4px 4px;border-left:2px solid var(--border)}
+
+/* Column labels (Ordrenr, Overskrift, Ansvarlig) */
+.th-label{
+  font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);padding:9px 10px;text-align:left;vertical-align:bottom;
+}
+
+/* DATA ROWS */
+.row-sag td{
+  border-bottom:1px solid var(--border);vertical-align:middle;
+  transition:background .1s;
+}
+.row-sag:hover td{background:color-mix(in srgb,var(--red-light) 40%,transparent)}
+
+.td-nr{padding:8px 10px;font-size:.78rem;color:var(--muted)}
+.td-ovs{padding:8px 10px;font-size:.83rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.td-ans{padding:8px 10px;font-size:.78rem;color:var(--muted)}
+.td-tot{
+  padding:5px 6px;text-align:center;border-left:1px solid var(--border);
+  font-size:.82rem;
+}
+.td-week{
+  padding:4px 2px;text-align:center;border-left:1px solid var(--border);
+  min-width:48px;
+}
+.td-week:first-of-type,.td-tot:first-of-type{border-left:2px solid var(--border)}
+
+/* Editable cell */
+.cell-input{
+  width:44px;text-align:center;border:1px solid transparent;border-radius:3px;
+  background:transparent;color:var(--text);font-family:inherit;font-size:.82rem;
+  padding:3px 2px;font-variant-numeric:tabular-nums;
+}
+.cell-input:hover{border-color:var(--border);background:var(--surface)}
+.cell-input:focus{outline:none;border-color:var(--red);background:var(--surface)}
+
+/* SUM ROW */
+.row-sum td{
+  background:var(--surface);border-top:2px solid var(--border);
+  border-bottom:1px solid var(--border);font-weight:600;
+  font-size:.78rem;padding:7px 10px;
+}
+.row-sum .td-week,.row-sum .td-tot{text-align:center;padding:7px 6px}
+.sum-label{font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+
+/* RÅDIGHED ROW */
+.row-raad td{border-bottom:1px solid var(--border);background:var(--bg);font-size:.78rem;padding:5px 10px}
+.row-raad .td-week,.row-raad .td-tot{text-align:center;padding:5px 6px}
+
+/* PCT ROW */
+.row-pct td{border-bottom:2px solid var(--border);font-weight:600;font-size:.78rem;padding:7px 10px}
+.row-pct .td-week,.row-pct .td-tot{text-align:center;padding:7px 6px}
+.pct-ok  {color:var(--ok);background:var(--ok-bg)}
+.pct-warn{color:var(--warn);background:var(--warn-bg)}
+.pct-over{color:var(--over);background:var(--over-bg)}
+.pct-none{color:var(--muted)}
+
+/* File upload area */
+.upload-bar{
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:.75rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-shrink:0;
+}
+.upload-bar label{
+  display:flex;align-items:center;gap:8px;font-size:.8rem;cursor:pointer;
+  border:1px solid var(--border);border-radius:var(--radius);padding:6px 14px;
+  background:var(--bg);color:var(--text);transition:border-color .15s;
+}
+.upload-bar label:hover{border-color:var(--red);color:var(--red)}
+.upload-bar input[type=file]{display:none}
+.upload-status{font-size:.78rem;color:var(--muted)}
+
+/* Uge-gruppe ramme — rød lodret streg venstre+højre om hele kolonnegruppen */
+.week-first td.td-week:first-of-type,
+.row-sum .week-first-sum,
+.row-raad .week-first-raad,
+.row-pct .week-first-pct { border-left: 2px solid var(--red) !important; }
+.week-last td.td-week:last-child { border-right: 2px solid var(--red); }
+
+/* Helligdag badge */
+.hel-badge{
+  display:block;font-size:.6rem;font-weight:600;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--over);opacity:.8;margin-top:1px;
+}
+</style>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Bjarne Larsen ApS <span>· Bemandingsplan</span></div>
+  <div class="header-right">
+    <div class="user-pill">shl@bjarnelarsen.nu</div>
+    <button class="btn-ghost" onclick="history.back()">← Portal</button>
+  </div>
+</header>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <h1>Bemandingsplan</h1>
+  <select class="filter-select" id="filterAns">
+    <option value="">Alle ansvarlige</option>
+  </select>
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:var(--mu-bg);border:1px solid var(--mu)"></div>Murer</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--to-bg);border:1px solid var(--to)"></div>Tømrer</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--ma-bg);border:1px solid var(--ma)"></div>Maler</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--kl-bg);border:1px solid var(--kl)"></div>Kloak</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--ok-bg);border:1px solid var(--ok)"></div>Under 90%</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--warn-bg);border:1px solid var(--warn)"></div>90–110%</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--over-bg);border:1px solid var(--over)"></div>Over 110%</div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="scroll-wrap">
+  <div style="overflow-x:auto">
+    <table class="plan-table" id="planTable">
+      <thead>
+        <tr class="thead-top" id="headWeeks"></tr>
+        <tr class="thead-fag" id="headFags"></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+      <tfoot id="tfoot"></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div class="upload-bar">
+  <label>
+    📂 Importer fra Minuba (CSV/XLSX)
+    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls">
+  </label>
+  <span class="upload-status" id="uploadStatus">Ingen fil importeret — data nedenfor er eksempler</span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ── HELLIGDAGE DK 2026 + 2027 ──
+const HELLIGDAGE = {
+  // 2026
+  '2026-01-01':'Nytårsdag','2026-04-02':'Skærtorsdag','2026-04-03':'Langfredag',
+  '2026-04-05':'Påskedag','2026-04-06':'2. påskedag','2026-05-14':'Kr. himmelfart',
+  '2026-05-24':'Pinsedag','2026-05-25':'2. pinsedag','2026-06-05':'Grundlovsdag',
+  '2026-12-24':'Juleaften','2026-12-25':'Juledag','2026-12-26':'2. juledag',
+  // 2027
+  '2027-01-01':'Nytårsdag','2027-03-25':'Skærtorsdag','2027-03-26':'Langfredag',
+  '2027-03-28':'Påskedag','2027-03-29':'2. påskedag','2027-05-06':'Kr. himmelfart',
+  '2027-05-16':'Pinsedag','2027-05-17':'2. pinsedag','2027-06-05':'Grundlovsdag',
+  '2027-12-24':'Juleaften','2027-12-25':'Juledag','2027-12-26':'2. juledag',
+};
+
+// ── UGE-HJÆLP ──
+function isoWeek(d){
+  const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7));
+  const y=new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return{week:Math.ceil(((t-y)/86400000+1)/7),year:t.getUTCFullYear()};
+}
+function weekStart(year,week){
+  const jan4=new Date(Date.UTC(year,0,4));
+  const dow=jan4.getUTCDay()||7;
+  const mon=new Date(jan4.getTime()-((dow-1)*86400000)+((week-1)*7*86400000));
+  return mon;
+}
+function fmtDate(d){return d.toISOString().slice(0,10);}
+function hoursInWeek(year,week){
+  // 5 arbejdsdage × 7,4t = 37t minus helligdage
+  const mon=weekStart(year,week);
+  let h=37;
+  for(let i=0;i<5;i++){
+    const day=new Date(mon.getTime()+i*86400000);
+    if(HELLIGDAGE[fmtDate(day)]) h-=7.4;
+  }
+  return Math.max(0,Math.round(h*10)/10);
+}
+function helligdageInWeek(year,week){
+  const mon=weekStart(year,week);
+  const hel=[];
+  for(let i=0;i<5;i++){
+    const day=new Date(mon.getTime()+i*86400000);
+    const k=fmtDate(day);
+    if(HELLIGDAGE[k]) hel.push(HELLIGDAGE[k]);
+  }
+  return hel;
+}
+
+// ── UGER DER VISES: aktuel uge + 7 fremad ──
+const NUM_WEEKS=8;
+const FAGS=['MU','TØ','MA','KL'];
+const FAG_CLASS={MU:'th-mu',TØ:'th-to',MA:'th-ma',KL:'th-kl'};
+
+function lastIsoWeekOfYear(y){
+  // Uge 53 findes kun hvis 1. jan er torsdag (eller skudår + onsdag)
+  const dec28=new Date(Date.UTC(y,11,28));
+  return isoWeek(dec28).week;
+}
+function getWeeks(){
+  const now=new Date();
+  const {week:w0,year:y0}=isoWeek(now);
+  const weeks=[];
+  let w=w0,y=y0;
+  for(let i=0;i<NUM_WEEKS;i++){
+    weeks.push({week:w,year:y,hel:helligdageInWeek(y,w),hours:hoursInWeek(y,w)});
+    w++;
+    if(w>lastIsoWeekOfYear(y)){w=1;y++;}
+  }
+  return weeks;
+}
+const WEEKS=getWeeks();
+const {week:CUR_WEEK,year:CUR_YEAR}=isoWeek(new Date());
+
+// ── EKSEMPELDATA ──
+let sager=[
+  {nr:'261040',ovs:'Vandskade - badeværelse',kunde:'Hansen, Jens',ans:'Erik Mikkelsen',
+   tot:{MU:80,TØ:0,MA:40,KL:20},uger:{}},
+  {nr:'261055',ovs:'Stormskade - tag og facade',kunde:'Vejle Kommune',ans:'Lars Poulsen',
+   tot:{MU:200,TØ:120,MA:0,KL:0},uger:{}},
+  {nr:'261063',ovs:'Brandrenovering - køkken',kunde:'ATP Ejendomme',ans:'Morten Søndergaard',
+   tot:{MU:60,TØ:60,MA:80,KL:0},uger:{}},
+  {nr:'261071',ovs:'Fugt og skimmel',kunde:'Olsen, Birthe',ans:'Erik Mikkelsen',
+   tot:{MU:40,TØ:0,MA:20,KL:30},uger:{}},
+];
+// Seed lidt timer på de første to uger
+function seed(){
+  const [w0,w1,w2]=WEEKS;
+  sager[0].uger[`${w0.year}-${w0.week}`]={MU:16,TØ:0,MA:8,KL:0};
+  sager[0].uger[`${w1.year}-${w1.week}`]={MU:24,TØ:0,MA:16,KL:0};
+  sager[1].uger[`${w0.year}-${w0.week}`]={MU:40,TØ:30,MA:0,KL:0};
+  sager[1].uger[`${w1.year}-${w1.week}`]={MU:40,TØ:30,MA:0,KL:0};
+  sager[2].uger[`${w0.year}-${w0.week}`]={MU:0,TØ:15,MA:0,KL:0};
+  sager[2].uger[`${w2.year}-${w2.week}`]={MU:20,TØ:20,MA:40,KL:0};
+  sager[3].uger[`${w1.year}-${w1.week}`]={MU:10,TØ:0,MA:0,KL:15};
+}
+seed();
+
+// Rådighed pr uge (timer pr fag — kan redigeres, gemmes i localStorage)
+const LS_KEY='bl_raadighed';
+let raadighed={};
+try{
+  const saved=JSON.parse(localStorage.getItem(LS_KEY)||'{}');
+  WEEKS.forEach(({week,year})=>{
+    const k=`${year}-${week}`;
+    raadighed[k]=saved[k]||{MU:37,TØ:37,MA:37,KL:14.8};
+  });
+}catch(e){
+  WEEKS.forEach(({week,year})=>{
+    const k=`${year}-${week}`;
+    raadighed[k]={MU:37,TØ:37,MA:37,KL:14.8};
+  });
+}
+
+// ── SANITIZE (XSS-beskyttelse) ──
+function esc(str){
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+// ── DATA PERSISTERING (localStorage) ──
+const LS_SAGER='bl_sager_uger';
+function saveUger(){
+  try{
+    const data=sager.map(s=>({nr:s.nr,uger:s.uger,tot:s.tot}));
+    localStorage.setItem(LS_SAGER,JSON.stringify(data));
+  }catch(e){}
+}
+function loadUger(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(LS_SAGER)||'[]');
+    saved.forEach(s=>{
+      const sag=sager.find(x=>x.nr===s.nr);
+      if(sag){
+        if(s.uger) sag.uger=s.uger;
+        if(s.tot) sag.tot=s.tot;
+      }
+    });
+  }catch(e){}
+}
+
+// ── FILTER ──
+let activeFilter='';
+function updateFilterOptions(){
+  const sel=document.getElementById('filterAns');
+  const current=sel.value;
+  const names=[...new Set(sager.map(s=>s.ans).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">Alle ansvarlige</option>';
+  names.forEach(n=>{
+    const opt=document.createElement('option');
+    opt.value=n;opt.textContent=n;
+    if(n===current) opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+document.getElementById('filterAns').addEventListener('change',e=>{
+  activeFilter=e.target.value;
+  buildTable();
+});
+function filteredSager(){return activeFilter?sager.filter(s=>s.ans===activeFilter):sager;}
+
+// ── BYGG TABEL ──
+function cellKey(sag,wk,fag){return `${sag.nr}|${wk}|${fag}`;}
+function wk(w){return `${w.year}-${w.week}`;}
+
+function buildTable(){
+  // HEAD row 1: label-cols + Total + uger
+  const hw=document.getElementById('headWeeks');
+  hw.innerHTML='';
+  hw.innerHTML+=`<th class="th-label col-nr" rowspan="2">Ordre</th>`;
+  hw.innerHTML+=`<th class="th-label col-ovs" rowspan="2">Overskrift</th>`;
+  hw.innerHTML+=`<th class="th-label col-ans" rowspan="2">Ansvarlig</th>`;
+  hw.innerHTML+=`<th class="th-total-group" colspan="${FAGS.length}">Total</th>`;
+  WEEKS.forEach(w=>{
+    const isCur=(w.week===CUR_WEEK&&w.year===CUR_YEAR);
+    const helTxt=w.hel.length?`<span class="hel-badge">${w.hel[0].split(' ')[0]}…</span>`:'';
+    hw.innerHTML+=`<th class="th-week${isCur?' current':''}" colspan="${FAGS.length}">Uge ${w.week}${helTxt}</th>`;
+  });
+
+  // HEAD row 2: fag-cols
+  const hf=document.getElementById('headFags');
+  hf.innerHTML='';
+  hf.innerHTML+=`<th></th><th></th><th></th>`; // sticky cols taken by rowspan
+  FAGS.forEach(f=>hf.innerHTML+=`<th class="th-fag ${FAG_CLASS[f]}">${f}</th>`);
+  WEEKS.forEach(()=>FAGS.forEach(f=>hf.innerHTML+=`<th class="th-fag ${FAG_CLASS[f]}">${f}</th>`));
+
+  // TBODY: sager (filtreret)
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  const vis=filteredSager();
+  vis.forEach((sag,_)=>{
+    const si=sager.indexOf(sag);
+    const tr=document.createElement('tr');
+    tr.className='row-sag';
+    // Sticky cols — escaped for XSS safety
+    tr.innerHTML=`<td class="td-nr col-nr">${esc(sag.nr)}</td>
+      <td class="td-ovs col-ovs" title="${esc(sag.ovs)}">${esc(sag.ovs)}</td>
+      <td class="td-ans col-ans">${esc(sag.ans.split(' ').pop())}</td>`;
+    // Totals
+    FAGS.forEach(f=>{
+      const td=document.createElement('td');
+      td.className='td-tot';
+      td.style.borderLeft=FAGS.indexOf(f)===0?'2px solid var(--border)':'1px solid var(--border)';
+      const inp=document.createElement('input');
+      inp.type='number';inp.min='0';inp.className='cell-input';
+      inp.value=sag.tot[f]||'';inp.placeholder='–';
+      inp.dataset.sag=si;inp.dataset.fag=f;inp.dataset.type='tot';
+      inp.addEventListener('change',onInputChange);
+      td.appendChild(inp);tr.appendChild(td);
+    });
+    // Uger
+    WEEKS.forEach((w,wi)=>{
+      const k=wk(w);
+      const isLast=wi===WEEKS.length-1;
+      FAGS.forEach((f,fi)=>{
+        const td=document.createElement('td');
+        td.className='td-week';
+        const isFirst=fi===0;
+        const isLastFag=fi===FAGS.length-1;
+        td.style.borderLeft=isFirst?'2px solid var(--red)':'1px solid var(--border)';
+        if(isLastFag) td.style.borderRight='2px solid var(--red)';
+        const inp=document.createElement('input');
+        inp.type='number';inp.min='0';inp.className='cell-input';
+        const val=(sag.uger[k]&&sag.uger[k][f])||'';
+        inp.value=val||'';inp.placeholder='–';
+        inp.dataset.sag=si;inp.dataset.fag=f;inp.dataset.wk=k;inp.dataset.type='uge';
+        inp.addEventListener('change',onInputChange);
+        td.appendChild(inp);tr.appendChild(td);
+      });
+    });
+    tbody.appendChild(tr);
+  });
+
+  // TFOOT: sum, rådighed, pct
+  buildFoot();
+  updateFilterOptions();
+}
+
+function buildFoot(){
+  const tf=document.getElementById('tfoot');
+  tf.innerHTML='';
+
+  // Sum row (kun filtrerede sager)
+  const vis=filteredSager();
+  const rSum=document.createElement('tr');rSum.className='row-sum';
+  rSum.innerHTML=`<td class="col-nr sum-label" colspan="3" style="padding:7px 10px">Booket</td>`;
+  FAGS.forEach((f,fi)=>{
+    const td=document.createElement('td');td.className='td-tot';
+    td.style.borderLeft=fi===0?'2px solid var(--border)':'1px solid var(--border)';
+    const s=vis.reduce((a,sag)=>(a+(Number(sag.tot[f])||0)),0);
+    td.textContent=s||'–';rSum.appendChild(td);
+  });
+  WEEKS.forEach((w,wi)=>{
+    const k=wk(w);
+    FAGS.forEach((f,fi)=>{
+      const td=document.createElement('td');td.className='td-week';
+      const isLastFag=fi===FAGS.length-1;
+      td.style.borderLeft=fi===0?'2px solid var(--red)':'1px solid var(--border)';
+      if(isLastFag) td.style.borderRight='2px solid var(--red)';
+      const s=vis.reduce((a,sag)=>(a+((sag.uger[k]&&Number(sag.uger[k][f]))||0)),0);
+      td.textContent=s||'–';rSum.appendChild(td);
+    });
+  });
+  tf.appendChild(rSum);
+
+  // Rådighed row
+  const rRaad=document.createElement('tr');rRaad.className='row-raad';
+  rRaad.innerHTML=`<td class="col-nr sum-label" colspan="3" style="padding:5px 10px">Til rådighed (t)</td>`;
+  FAGS.forEach((_,fi)=>{const td=document.createElement('td');td.className='td-tot';td.style.borderLeft=fi===0?'2px solid var(--border)':'1px solid var(--border)';td.textContent='–';rRaad.appendChild(td);});
+  WEEKS.forEach((w,wi)=>{
+    const k=wk(w);
+    FAGS.forEach((f,fi)=>{
+      const td=document.createElement('td');td.className='td-week';
+      const isLastFag=fi===FAGS.length-1;
+      td.style.borderLeft=fi===0?'2px solid var(--red)':'1px solid var(--border)';
+      if(isLastFag) td.style.borderRight='2px solid var(--red)';
+      const hours=w.hours;
+      const avail=raadighed[k]?raadighed[k][f]:hours;
+      const inp=document.createElement('input');
+      inp.type='number';inp.min='0';inp.step='0.5';inp.className='cell-input';
+      inp.value=avail;inp.dataset.wk=k;inp.dataset.fag=f;inp.dataset.type='raad';
+      inp.style.width='52px';
+      inp.addEventListener('change',onRaadChange);
+      td.appendChild(inp);rRaad.appendChild(td);
+    });
+  });
+  tf.appendChild(rRaad);
+
+  // Pct row
+  const rPct=document.createElement('tr');rPct.className='row-pct';
+  rPct.innerHTML=`<td class="col-nr sum-label" colspan="3" style="padding:7px 10px">Bemanding %</td>`;
+  FAGS.forEach((_,fi)=>{const td=document.createElement('td');td.className='td-tot';td.style.borderLeft=fi===0?'2px solid var(--border)':'1px solid var(--border)';td.textContent='–';rPct.appendChild(td);});
+  WEEKS.forEach(w=>{
+    const k=wk(w);
+    FAGS.forEach((f,fi)=>{
+      const td=document.createElement('td');td.className='td-week';
+      const isLastFag=fi===FAGS.length-1;
+      td.style.borderLeft=fi===0?'2px solid var(--red)':'1px solid var(--border)';
+      if(isLastFag) td.style.borderRight='2px solid var(--red)';
+      td.dataset.wk=k;td.dataset.fag=f;td.id=`pct-${k}-${f}`;
+      rPct.appendChild(td);
+    });
+  });
+  tf.appendChild(rPct);
+  updatePct();
+}
+
+function updatePct(){
+  const vis=filteredSager();
+  WEEKS.forEach(w=>{
+    const k=wk(w);
+    FAGS.forEach(f=>{
+      const booked=vis.reduce((a,sag)=>(a+((sag.uger[k]&&Number(sag.uger[k][f]))||0)),0);
+      const avail=raadighed[k]?Number(raadighed[k][f]):w.hours;
+      const td=document.getElementById(`pct-${k}-${f}`);
+      if(!td) return;
+      td.className='td-week';
+      if(!avail||!booked){td.textContent='–';td.classList.add('pct-none');return;}
+      const pct=Math.round(booked/avail*100);
+      td.textContent=pct+'%';
+      td.classList.remove('pct-ok','pct-warn','pct-over','pct-none');
+      if(pct>110) td.classList.add('pct-over');
+      else if(pct>=90) td.classList.add('pct-warn');
+      else td.classList.add('pct-ok');
+    });
+  });
+}
+
+function onInputChange(e){
+  const inp=e.target;
+  const si=parseInt(inp.dataset.sag);
+  const f=inp.dataset.fag;
+  const v=Number(inp.value)||0;
+  if(inp.dataset.type==='tot'){
+    sager[si].tot[f]=v;
+  } else {
+    const k=inp.dataset.wk;
+    if(!sager[si].uger[k]) sager[si].uger[k]={MU:0,TØ:0,MA:0,KL:0};
+    sager[si].uger[k][f]=v;
+  }
+  saveUger();
+  buildFoot();
+}
+
+function onRaadChange(e){
+  const inp=e.target;
+  const k=inp.dataset.wk;const f=inp.dataset.fag;
+  if(!raadighed[k]) raadighed[k]={MU:37,TØ:37,MA:37,KL:14.8};
+  raadighed[k][f]=Number(inp.value)||0;
+  try{ localStorage.setItem(LS_KEY,JSON.stringify(raadighed)); }catch(e){}
+  updatePct();
+}
+
+// ── CSV/XLSX IMPORT ──
+document.getElementById('fileInput').addEventListener('change',async e=>{
+  const file=e.target.files[0];if(!file) return;
+  document.getElementById('uploadStatus').textContent='Indlæser…';
+  try{
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+    // Find header row: indeholder 'Ordrenr' eller 'Ordrenummer'
+    let headerIdx=-1;
+    rows.forEach((r,i)=>{if(String(r[0]).match(/ordre/i)) headerIdx=i;});
+    if(headerIdx<0){document.getElementById('uploadStatus').textContent='Kunne ikke finde kolonneoverskrifter.';return;}
+    const headers=rows[headerIdx].map(h=>String(h).trim());
+    const colNr=headers.findIndex(h=>h.match(/ordre/i));
+    const colOvs=headers.findIndex(h=>h.match(/overskrift|titel/i));
+    const colKunde=headers.findIndex(h=>h.match(/kunde/i));
+    const colAdr=headers.findIndex(h=>h.match(/adresse/i));
+    const colAns=headers.findIndex(h=>h.match(/ansvarlig/i));
+    const newSager=[];
+    for(let i=headerIdx+1;i<rows.length;i++){
+      const r=rows[i];
+      const nr=String(r[colNr]||'').trim();
+      if(!nr) continue;
+      newSager.push({
+        nr,
+        ovs:String(r[colOvs]||'').trim()||'(ingen overskrift)',
+        kunde:String(r[colKunde]||'').trim(),
+        ans:String(r[colAns]||'').trim(),
+        tot:{MU:0,TØ:0,MA:0,KL:0},
+        uger:{}
+      });
+    }
+    if(newSager.length===0){document.getElementById('uploadStatus').textContent='Ingen sager fundet i filen.';return;}
+    sager=newSager;
+    // Genindlæs evt. gemte timer for disse sagsnumre
+    loadUger();
+    activeFilter='';
+    document.getElementById('filterAns').value='';
+    buildTable();
+    document.getElementById('uploadStatus').textContent=`${newSager.length} sager importeret fra ${file.name}`;
+  }catch(err){
+    document.getElementById('uploadStatus').textContent='Fejl ved indlæsning: '+err.message;
+  }
+});
+
+// ── INIT ──
+loadUger();
+buildTable();
+</script>
