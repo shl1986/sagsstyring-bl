@@ -632,16 +632,17 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
   document.getElementById('uploadStatus').textContent='Indlæser…';
   try{
     const buf=await file.arrayBuffer();
-    const wb=XLSX.read(buf,{type:'array'});
+    const isCsv=file.name.toLowerCase().endsWith('.csv');
+    const wb=XLSX.read(buf,{type:'array', FS: isCsv?';':undefined});
     const ws=wb.Sheets[wb.SheetNames[0]];
     const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
     // Find header row: indeholder 'Ordrenr' eller 'Ordrenummer'
     let headerIdx=-1;
-    rows.forEach((r,i)=>{if(String(r[0]).match(/ordre/i)) headerIdx=i;});
+    rows.forEach((r,i)=>{if(r.some(c=>String(c).match(/^ordrenummer$/i))) headerIdx=i;});
     if(headerIdx<0){document.getElementById('uploadStatus').textContent='Kunne ikke finde kolonneoverskrifter.';return;}
     const headers=rows[headerIdx].map(h=>String(h).trim());
-    const colNr=headers.findIndex(h=>h.match(/ordre/i));
-    const colOvs=headers.findIndex(h=>h.match(/overskrift|titel/i));
+    const colNr=headers.findIndex(h=>h.match(/^ordrenummer$/i));
+    const colOvs=headers.findIndex(h=>h.match(/ordreoverskrift|titel/i));
     const colKunde=headers.findIndex(h=>h.match(/kunde/i));
     const colAdr=headers.findIndex(h=>h.match(/adresse/i));
     const colAns=headers.findIndex(h=>h.match(/ansvarlig/i));
