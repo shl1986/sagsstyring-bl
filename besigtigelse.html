@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Besigtigelsesrapport · Bjarne Larsen ApS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Samme visuelle sprog som sagstyring/bemanding */
+:root{
+  --red:#B81C2B; --red-dark:#8e1520; --red-light:#fce8ea;
+  --bg:#f4f1ec; --surface:#faf8f4; --white:#ffffff; --text:#1a2024; --muted:#6b7a8d; --border:#ddd8ce;
+  --ok:#2d6a4f; --ok-bg:#d8f3dc; --warn:#92510a; --warn-bg:#fef3cd;
+  --radius:4px; --r-lg:8px; color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#18181b; --surface:#1f1f23; --white:#26262b; --text:#e8e4dc; --muted:#8a94a0; --border:#2e2e34;
+  --red-light:#2b0a0e; --ok:#74c69d; --ok-bg:#0d2b1e; --warn:#f0b35c; --warn-bg:#2b1f06; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#18181b; --surface:#1f1f23; --white:#26262b; --text:#e8e4dc; --muted:#8a94a0; --border:#2e2e34;
+  --red-light:#2b0a0e; --ok:#74c69d; --ok-bg:#0d2b1e; --warn:#f0b35c; --warn-bg:#2b1f06; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'DM Sans',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5}
+.wrap{max-width:820px;margin:0 auto;padding:20px 16px 120px}
+h1{font-family:'DM Serif Display',Georgia,serif;font-weight:400;font-size:1.7rem;margin:0}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:3px solid var(--red);padding-bottom:12px;margin-bottom:18px}
+.tabs{display:flex;gap:6px}
+.tab{background:none;border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:var(--radius);font:inherit;font-size:.85rem;font-weight:500;cursor:pointer}
+.tab.on{background:var(--red);border-color:var(--red);color:#fff}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;display:grid;gap:14px}
+.stack{display:grid;gap:16px}
+.step-lbl{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.choice{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:16px;text-align:left;font:inherit;color:var(--text);cursor:pointer;display:grid;gap:4px}
+.choice b{font-size:1.05rem}
+.choice span{color:var(--muted);font-size:.82rem}
+.choice:hover{border-color:var(--red)}
+.crumbs{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.crumb{background:var(--red-light);color:var(--red-dark);border-radius:20px;padding:4px 12px;font-size:.82rem;font-weight:700}
+:root[data-theme="dark"] .crumb{color:#f3a3ab}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .crumb{color:#f3a3ab}}
+.link{background:none;border:none;color:var(--red);font:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline;padding:0}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.row,.row2{grid-template-columns:1fr}}
+.field{display:grid;gap:5px;min-width:0}
+label,.lbl{font-weight:700;font-size:.88rem}
+.num{color:var(--red);display:inline-block;min-width:1.8em;font-variant-numeric:tabular-nums}
+.hint{color:var(--muted);font-size:.8rem;margin:0}
+input[type=text],input[type=date],select,textarea{width:100%;font:inherit;font-size:.92rem;color:var(--text);background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:9px 11px}
+textarea{min-height:80px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--red);outline-offset:1px;border-color:var(--red)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:flex;align-items:center;gap:6px;background:var(--white);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.85rem;cursor:pointer}
+.chip input{accent-color:var(--red);margin:0}
+.req::after{content:" *";color:var(--red)}
+.sec{font-family:'DM Serif Display',Georgia,serif;font-size:1.15rem;margin:6px 0 -4px}
+.actions{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));z-index:5}
+.actions .in{max-width:820px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{font:inherit;font-size:.88rem;font-weight:700;padding:10px 16px;border-radius:var(--radius);border:1px solid var(--border);background:var(--white);color:var(--text);cursor:pointer}
+.btn.pri{background:var(--red);border-color:var(--red);color:#fff}
+.btn.pri:hover{background:var(--red-dark)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.sm{padding:5px 10px;font-size:.8rem}
+.status{font-size:.85rem;color:var(--muted)}
+.status.err{color:var(--red)}
+.status.ok{color:var(--ok)}
+.out-box{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px;display:grid;gap:8px}
+.out-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.out-head b{font-size:.95rem}
+.out-box textarea{min-height:110px;border:none;background:transparent;padding:0;font-size:.9rem}
+.out-box textarea.big{min-height:420px}
+.warnbox{background:var(--warn-bg);color:var(--warn);border-radius:var(--r-lg);padding:10px 14px;font-size:.85rem}
+.warnbox ul{margin:4px 0 0;padding-left:18px}
+.pill{display:inline-block;border-radius:10px;padding:1px 8px;font-size:.72rem;font-weight:700}
+.pill.sendt{background:var(--ok-bg);color:var(--ok)}
+.pill.gemt{background:var(--warn-bg);color:var(--warn)}
+.list{display:grid;gap:6px}
+.item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;cursor:pointer;text-align:left;font:inherit;color:var(--text)}
+.item:hover{border-color:var(--red)}
+.item .meta{color:var(--muted);font-size:.8rem}
+.gate{max-width:420px;margin:80px auto;text-align:center;display:grid;gap:12px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate" hidden>
+  <h1>Log ind først</h1>
+  <p class="hint">Besigtigelsesrapporten åbnes via portalen. Log ind dér, og vælg værktøjet i menuen.</p>
+  <button class="btn pri" onclick="(window.top||window).location.href='index.html'">Gå til portalen</button>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <div class="top">
+    <div>
+      <div class="step-lbl">Bjarne Larsen ApS · Fælles</div>
+      <h1>Besigtigelsesrapport</h1>
+    </div>
+    <div class="tabs">
+      <button class="tab on" id="tabNy" onclick="visFane('ny')">Ny rapport</button>
+      <button class="tab" id="tabHist" onclick="visFane('hist')">Tidligere rapporter</button>
+    </div>
+  </div>
+
+  <!-- ═══ NY RAPPORT ═══ -->
+  <section id="fane-ny" class="stack">
+
+    <div class="card" id="trin1">
+      <div class="step-lbl">Trin 1 · Hvilken type opgave?</div>
+      <div class="choices">
+        <button class="choice" onclick="vaelgFag('tmm')"><b>Tømrer · Maler · Murer</b><span>Topdanmark eller Alm. Brand</span></button>
+        <button class="choice" onclick="vaelgFag('kloak')"><b>Kloak</b><span>Alm. Brand</span></button>
+      </div>
+    </div>
+
+    <div class="card" id="trin2" hidden>
+      <div class="crumbs"><span class="crumb" id="crumbFag"></span><button class="link" onclick="nulstilValg()">Skift</button></div>
+      <div class="step-lbl">Trin 2 · Hvilket selskab?</div>
+      <div class="choices" id="selskabValg"></div>
+    </div>
+
+    <form id="f" class="stack" autocomplete="off" hidden onsubmit="return false">
+      <div class="card">
+        <div class="crumbs">
+          <span class="crumb" id="crumbFag2"></span><span class="crumb" id="crumbSelskab"></span>
+          <button class="link" type="button" onclick="nulstilValg()">Skift fag/selskab</button>
+        </div>
+        <div class="row">
+          <div class="field"><label for="skadenummer" class="req"><span class="num">1</span>Skadenummer</label><input type="text" id="skadenummer" inputmode="numeric"></div>
+          <div class="field"><label for="adresse" class="req"><span class="num">2</span>Skadeadresse</label><input type="text" id="adresse"></div>
+          <div class="field"><label for="dato" class="req"><span class="num">3</span>Besigtigelsesdato</label><input type="date" id="dato"></div>
+        </div>
+        <div class="field">
+          <span class="lbl req"><span class="num">4</span>Deltagere ved besigtigelsen</span>
+          <span class="hint">Bjarne Larsen ApS – de valgte får rapporten på mail</span>
+          <div class="chips" id="blDeltagere"></div>
+        </div>
+        <div class="field">
+          <label for="ft" class="req">Forsikringstager eller dennes repræsentant</label>
+          <input type="text" id="ft" placeholder="Navn – fx også lejer, ejer, administrator">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="daekning">Dækning</label>
+            <select id="daekning"><option value="">Vælg…</option><option>Dækket</option><option>Ikke dækket</option><option>Delvist dækket</option><option>Uafklaret</option><option>Under selvrisiko</option></select>
+          </div>
+          <div class="field">
+            <label for="forbehold">Forbehold og bemærkninger (fra Scalepoint)</label>
+            <input type="text" id="forbehold" placeholder="Fx 8805-2 eller 4201, B230.02">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="field">
+          <label for="aarsagType" class="req"><span class="num">5</span>Skadesårsag</label>
+          <select id="aarsagType"></select>
+          <label for="aarsagTekst" class="hint" style="font-weight:400">Beskriv årsagen grundigt, så en der ikke har besigtiget skaden klart kan forstå, hvad årsagen er.</label>
+          <textarea id="aarsagTekst"></textarea>
+        </div>
+
+        <div class="field" id="beskrivTmm">
+          <label for="beskrivelse" class="req"><span class="num">6</span>Skadesbeskrivelse</label>
+          <p class="hint">Skadens placering? Hvad er beskadiget? Størrelser og mængder på de skadede bygningsdele. Vær præcis.</p>
+          <textarea id="beskrivelse" style="min-height:130px"></textarea>
+        </div>
+        <div class="stack" id="beskrivKloak" hidden>
+          <div class="field"><label for="k61" class="req"><span class="num">6.1</span>Hvad er der sket skade på (bygningsdele), og hvor på bygningen?</label><textarea id="k61"></textarea></div>
+          <div class="field"><label for="k62"><span class="num">6.2</span>Hvordan kan/skal skaden repareres og hvorfor? Udskiftes eller repareres?</label><p class="hint">Fx klinker afdampes, udlusning i døre og vinduer.</p><textarea id="k62"></textarea></div>
+          <div class="field"><label for="k63"><span class="num">6.3</span>Materialevalg – skal der bruges materialer af særlig type/fabrikat?</label><textarea id="k63" style="min-height:60px"></textarea></div>
+          <div class="field"><label for="k64"><span class="num">6.4</span>Alderen på den beskadigede bygningsdel</label><input type="text" id="k64"></div>
+        </div>
+
+        <div class="field" id="belobFelt" hidden>
+          <span class="lbl req" id="belobLbl"></span>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="belob" value="under"> Under</label>
+            <label class="chip"><input type="radio" name="belob" value="over"> Over</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="field">
+          <label for="reparation" class="req"><span class="num">7</span>Reparation – hvordan vurderer du, at skaden kan repareres?</label>
+          <p class="hint">Så vi ved, hvilket tilbud vi kan forvente – fx partiel reparation eller komplet udskiftning af loft/gulv.</p>
+          <textarea id="reparation"></textarea>
+        </div>
+        <div class="field" id="andreFagFelt" hidden>
+          <span class="lbl">Skal der rekvireres andre faggrupper?</span>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="andreFag" value="Ja"> Ja</label>
+            <label class="chip"><input type="radio" name="andreFag" value="Nej"> Nej</label>
+          </div>
+          <div class="chips" id="andreFagValg" hidden>
+            <label class="chip"><input type="checkbox" name="fagValg" value="Murer"> Murer</label>
+            <label class="chip"><input type="checkbox" name="fagValg" value="Tømrer"> Tømrer</label>
+            <label class="chip"><input type="checkbox" name="fagValg" value="Maler"> Maler</label>
+            <label class="chip"><input type="checkbox" name="fagValg" value="VVS"> VVS</label>
+            <label class="chip"><input type="checkbox" name="fagValg" value="EL"> EL</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="nvh"><span class="num">8</span>Brug af netværkshåndværker?</label>
+          <p class="hint">Spørg forsikringstageren, om de ønsker at bruge netværkshåndværker, og notér overvejelser og betingelser.</p>
+          <textarea id="nvh" style="min-height:60px"></textarea>
+        </div>
+        <div class="field">
+          <label for="afskrivning"><span class="num">9</span>Afskrivning?</label>
+          <p class="hint" id="afskrivHint"></p>
+          <textarea id="afskrivning" style="min-height:60px"></textarea>
+        </div>
+        <div class="field">
+          <label for="indbo"><span class="num">10</span>Flytning af indbo?</label>
+          <p class="hint">Drøft med kunden. Angiv hvad der er aftalt – flytter kunden selv, eller skal vi eller en ekstern service hjælpe?</p>
+          <textarea id="indbo" style="min-height:60px"></textarea>
+        </div>
+        <div class="field">
+          <label for="klausul"><span class="num">11</span>Klausul/forbehold?</label>
+          <p class="hint">Tjek under "police" i Scalepoint for forbehold, der kan være relevante for skaden.</p>
+          <textarea id="klausul" style="min-height:60px"></textarea>
+        </div>
+        <div class="field">
+          <label for="oevrige"><span class="num">12</span>Øvrige forhold</label>
+          <p class="hint">Alt andet af betydning for sagen – fx asbest eller andre særlige forhold.</p>
+          <textarea id="oevrige" style="min-height:60px"></textarea>
+        </div>
+        <div class="field">
+          <span class="lbl req">Er der mulighed for regres?</span>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="regres" value="Ja"> Ja</label>
+            <label class="chip"><input type="radio" name="regres" value="Nej"> Nej</label>
+          </div>
+          <label for="regresTekst" class="hint" style="font-weight:400">Forklaring kræves uanset svar. Spørg FT, om de ved, hvem skadevolder er. Husk god dokumentation med billeder eller video.</label>
+          <textarea id="regresTekst" style="min-height:60px"></textarea>
+        </div>
+      </div>
+
+      <!-- RESULTAT -->
+      <div class="stack" id="resultat" hidden>
+        <div class="sec">Til Scalepoint</div>
+        <div class="warnbox" id="mangler" hidden></div>
+        <div class="out-box">
+          <div class="out-head"><b>Dækning</b></div>
+          <select id="o-daekning"><option>Dækket</option><option>Ikke dækket</option><option>Delvist dækket</option><option>Uafklaret</option><option>Under selvrisiko</option></select>
+        </div>
+        <div class="out-box">
+          <div class="out-head"><b>Årsag til afgørelse</b><button class="btn sm" type="button" data-copy="o-aarsag">Kopiér</button></div>
+          <textarea id="o-aarsag"></textarea>
+        </div>
+        <div class="out-box" id="o-regres-box">
+          <div class="out-head"><b>Regres</b>
+            <select id="o-regresValg" style="width:auto"><option>Ja</option><option>Nej</option><option>Ukendt</option></select>
+          </div>
+          <div class="out-head"><b>Kommentar til regres</b><button class="btn sm" type="button" data-copy="o-regres">Kopiér</button></div>
+          <textarea id="o-regres"></textarea>
+        </div>
+        <div class="out-box">
+          <div class="out-head"><b>Skadebeskrivelse</b><button class="btn sm" type="button" data-copy="o-beskr">Kopiér</button></div>
+          <textarea id="o-beskr" class="big"></textarea>
+        </div>
+        <p class="hint">Du kan rette i teksterne, før du gemmer. Rettelser kommer med i PDF'en og mailen.</p>
+      </div>
+    </form>
+  </section>
+
+  <!-- ═══ HISTORIK ═══ -->
+  <section id="fane-hist" class="stack" hidden>
+    <input type="text" id="soeg" placeholder="Søg på skadenummer, adresse eller selskab">
+    <div class="list" id="histListe"><p class="hint">Henter…</p></div>
+  </section>
+</div>
+
+<div class="actions" id="actions" hidden>
+  <div class="in">
+    <button class="btn pri" id="btnSkriv" type="button">Skriv rapport</button>
+    <button class="btn pri" id="btnGem" type="button" hidden>Gem og send til deltagere</button>
+    <button class="btn" id="btnPdf" type="button" hidden>Hent PDF</button>
+    <button class="btn" id="btnNy" type="button">Ny rapport</button>
+    <span class="status" id="status" aria-live="polite"></span>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const SUPA_URL = 'https://eybaeyemhnobxghxmtgx.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5YmFleWVtaG5vYnhnaHhtdGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MjE5NTgsImV4cCI6MjA5MzA5Nzk1OH0.IxkQDijl34ETFt-2gKVb4Ajve6T7PQxxwbiCRrBISYc';
+const LOGO = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUFBgwICQcKDgwPDg4MDQ0PERYTDxAVEQ0NExoTFRcYGRkZDxIbHRsYHRYYGRj/2wBDAQQEBAYFBgsGBgsYEA0QGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBj/wAARCACfAlgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD7+oorzLxL8f8A4V+EfFN54d17xFJbajZsEmhFlPJtJUMPmVCDwR0NTKSjrJnThsHXxUnDDwcmtbJN/kem0V47/wANR/BT/obJv/Bdc/8AxFH/AA1H8FP+hsm/8F1z/wDEVPtqf8yO3+wcy/6B5/8AgL/yPYqK8d/4aj+Cn/Q2Tf8Aguuf/iKP+Go/gp/0Nk3/AILrn/4ij21P+ZB/YOZf9A8//AX/AJHsVFeO/wDDUfwU/wChsm/8F1z/APEUf8NR/BT/AKGyb/wXXP8A8RR7an/Mg/sHMv8AoHn/AOAv/I9iorx3/hqP4Kf9DZN/4Lrn/wCIo/4aj+Cn/Q2Tf+C65/8AiKPbU/5kH9g5l/0Dz/8AAX/kexUV47/w1H8FP+hsm/8ABdc//EUf8NR/BT/obJv/AAXXP/xFHtqf8yD+wcy/6B5/+Av/ACPYqK8d/wCGo/gp/wBDZN/4Lrn/AOIo/wCGo/gp/wBDZN/4Lrn/AOIo9tT/AJkH9g5l/wBA8/8AwF/5HsVFeO/8NR/BT/obJv8AwXXP/wARR/w1H8FP+hsm/wDBdc//ABFHtqf8yD+wcy/6B5/+Av8AyPYqK8d/4aj+Cn/Q2Tf+C65/+Irb8JfHX4ZeOPFUHhzw1r8l3qM6u0cRs5owQqlm+ZlAHAPehVYPRNEVMlzCnFznQmktW3F2S+49HooorQ8wKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAA9DX5vftF/8nN+LP+viP/0THX6Qnoa/N79ov/k5vxZ/18R/+iY64sd8C9T9A8Ov9/q/4H/6VE8uooorzD9iCiiigAooooAKKKO2T0oAKKt3ul6lp0drJqGn3Vol3CLi3aeJoxNGSQHTI+ZcgjI9KqUCjJSV0wooooGFFFFABXtP7K3/ACc1on/XG6/9J3rxavaP2Vv+TmtE/wCuN1/6TvWlH+JH1PJz7/kW4j/BL8mfoVRRRXuH85hRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAHoa/N79ov/k5vxZ/18R/+iY6/SE9DX5vftF/8nN+LP8Ar4j/APRMdcWO+Bep+geHX+/1f8D/APSonl1FFFeYfsQUUUUAFFFFAG54U8H+JfG/iKPQ/C2kXGpXr4JSIYWNf7zueEX3JFfZvwl/ZV8N+Efs+t+ODB4g1pcOlsVzZ2zeyn/WsP7zDHovevM/2RfifaaH4kuPh1q/kxQ6tL59hcbQp+0AYMTN1IYDK56EED7wr7Vr0cLRg1zvVn5Txrn+YUK7wUPchbdbyT8+i6WX3tHkP7Qfwlj+Jvwyb+zLdP8AhINKDXGnMODJx88BPo4Ax6MFPrX52ujxyNHIjI6kqysMFSOCCOxFfrhXxD+1h8JP+Ec8VD4iaHbbdL1aXbfxoOILo/x+yyf+hA/3hRjKN1zoXAefezl/Ztd6PWPr1Xz3XnfufNdFFFecfq4UUUUAFe0fsrf8nNaJ/wBcbr/0nevF69o/ZW/5Oa0T/rjdf+k71pR/iR9Tyc+/5FuI/wAEvyZ+hVFFFe4fzmFFFFAHK/EL4heG/hj4Jk8VeKpbqPT45orcm1t3uJC8jhEARASckgcVwJ/ac8ARqZLrQfiBbQqCXmm8I6gEQDqSREcCsv8AbBuVsv2b1vHSaRYdf0qQpChd2C3kZwqjknjgDqa0Lr9pbwzaWM1y3w9+K7iNSxUeD7xSce7KAPxIFAHTzfHL4Zp4N8PeL4PEaXfh3Xb5NOtdWtone3jnc7VWdsfucsNuXAweDivRc8Zr5r+Bfgrwr8Sf2f8Ax7Jqy6bc6J4/1691ObR7KdZP7LWQIohcgYS5UosjYA2sRjpmsCH4q/Efwx4Tn/Z2PnX3xcjuU0fRtUeNvKutOdWMeru2CP3USMHGSfMQdcnAB9AaR8U/BWtaj4sgstVxbeFJvs+ralMhis4JQu50EzYVig+/g/LkZ61w3/DT/ge4ifUNF8K/ELXNCUnOv6X4YuprHaDgusm0FlGD8yqRXDePfh3ofhuz+Cv7Odh5j+Hda1qa51l5D8+qrZwG6kE5/i86XDN9ABwBXvXjHx94F+F/hy0v/GWvWHh/TZJVtLd58pGX2khFCg4+VTx6CgC74O8aeFvH/hG28UeDtattW0q5z5dzbk4yOqspwVYd1YAjuK5Hxj8dfBHhHxc/hKKLXPEviSNBLNovhnTJdRubdD0aURjbHnIIDMDg5xiuD8FeL/g9Yat8VPHfwm8c2etTXWnHXdQ0Gz4ggnghcNcKNow0uFD+pANdF+zL4fsvD/7M2g+JLmQTat4ktV8R6zqcvMt3cXI85nkbvtVgo9Av1oA3/A3xv8D+O/FE3hW2bVtE8Swxee+g+IdPk0+88v8AvrHIPnX3UnHem+O/jh4L+Hvja18JazBr95q9zZf2jHa6RpE9+3keYYy58pTgbhjn1HqK808a/Fb9mn4ka/4UvR8X9IsNd0HV4b/TL6zJ87cDteAlk5jlB2svQ8elRePvGmm+BP8AgoNpWr6np+u30Mvw/mthFoumzX8oY6irZaOIFgvyn5sYzgdxQB2kX7SvgiWZIl8M/EQF2Cgt4RvwOT3Pl1peLPj/AOBvCHxAvvBl7aeJ7/V7GGKe5i0jQ7m+WJJQShZolIGQD+R9Ki0v4/eFdW1yy0uDwp8RIZbudLdJLnwnfwxIXYKC7tHhFBPLHgDJNebj4iaT8P8A9uP4oPquk+JdQF5pGiBBoej3Go7dkc2S/kqdn3hjPXnHSgD1Pwn8cvCvjHxda+HdN0Lxpa3Nzv2S6l4cvLSBdqFjulkQKvCnGTycDqaml+OPw/i+A83xfa+vD4XilaFp1s5DLuFz9mIEWN3+s4+nNW/BHxV0Px5rVxpml6F4usJYIfPaTWtButPiYbguFeZAGb5h8o5xk9jXylcOsf8AwR7vpHOFTVZWY+gHiAk/yoA+gv8AhpnwKD8/hv4iIvdm8IahhR6n93XbaB8U/Anin4Z3vj7w5r0WpaHZRTS3MsMbiSDykLyI8TAOjgDOxgDyOORXDy/tX/AGKF5G8duQoJO3Sr4n8vJrgPA8R8RfDf49/F7TrI6f4a8aWktxo9s7KHkjgsHie6ZFJ2GV8ttOG4+YZoA98+HHxI8J/FbwDb+MfBeoPe6XPJJCHkiaJ1dG2srI3IPQ/Qg96b8SfiX4R+E/gObxf411B7LTI5Y4N0cTSu7ucKqovJPU/QE9q+df2VSvw81zQfBuTHo/jnwbpvinTQflRb+K2ihvo19WYeTKfxqr+1WU+I+u+KfC53S6J8PfCF74g1AKcq2p3MDx2cbDsUjEso/3hQB9a6Rqtnrnh6x1rT3Z7S+t47qBmUqSjqHUkHkHBHFcr4X+LXgXxj8S/EvgLQNY+0654cZU1C3MTKFJJU7WPD7WG1sdDwa5qfxzb/DX9i/T/Gs8fnPp3hm0e3gwSZ7hreNIYhjnLyMi/jXkc3gu7+AOmfCD4l3ru93azvo/ja7I5mXVJPNknlfusV2ykH0IFAH0P8RviZ4Y+Fvh+w1fxS1/5N/fR6bbR2FnJdyyzurMqLHGCxJCN29u9cT/AMNM+B/+hY+Iv/hIX/8A8brF/aq1WHRNJ+Fes3MF3PDZfELTLiSKzgaeZwsc5IjjUFnY9lAya3v+GjvCH/Qn/Ez/AMI7UP8A43QBf1b4++EdHs9Lubnw/wCOZV1K0F7ELbwxeysiF2TbIFj/AHb5Qna2DgqehFYNn+1b8NNRnuodP0nx3dyWkxt7lIPCt7IYJAASjgJ8rYIODzzXsul6hDq+gWerW8V1DFd26XCR3UTQyorqGAdGwyMM8qRkHg14r+z1k/EL43DJx/wndx3/AOneGgD2Pw5r1p4m8LWWvWMF7Bb3kfmxxX1s9tMoyRh43AZTx0IrUoooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAPQ1+b37Rf/Jzfiz/AK+I/wD0THX6Qnoa/N79ov8A5Ob8Wf8AXxH/AOiY64sd8C9T9A8Ov9/q/wCB/wDpUTy6iinxRSz3EcEETyyyMESONSzOx6AAck+wrzD9iGVseHfCfibxdqRsPDGg6hq1wPvJaQlwnuzdFH1Ir6F+Ev7Jer62YNc+JTTaTp5w6aRE226mH/TRv+WQ9h83+7X2DoHhzQvCuhQ6N4d0m102whGEgtowi/U+p9Sck110sJKestEfC53xzhsE3Swi9pPv9lfPr8tPM+AP+GX/AI2/YPtP/CIxdM+V/aFv5n5b/wBM15r4g8M+IfCmrnS/Eui32lXgG4Q3cRQsPVT0Ye4JFfq7XLePvh/4c+I/g6fw94js1licEwzqB5ttJjiSNuzD8j0OQa2nglb3XqeBgPESv7VLGU48j/lumvvbv6aH5dQTzWt1Fc200kM0TiSOWM7WRgchgexBAIr9HfgR8VIfin8MIb65dF1ywxbanCvH7zHEoH91wNw9DuHavz68Y+FtS8E+PNU8K6uB9r0+cws6jCyL1V19mUqw+tdF8HfiXefCz4n2niCPzJNOl/0fUrZf+WsBPJA/vKfmX3BHc1zYeq6U7PY+v4myeGdYFTo6zS5oPvfp81+Nj9NKyfE3hzSvFvhHUPDet24uLC+haGZO+D0IPZgcEHsQDV3TtQstW0m21PTrmO5tLqJZoZozlZEYZVh7EEVZr19Gj8KjKdKaktJJ/NNH5afELwPqvw6+Imo+FNXBaS2fMM+MLcQtyko+o6+hBHauYr9Af2l/hJ/wsP4d/wBt6Na7/EWjI0tuEHzXMPWSH3PG5f8AaGP4jX5/V41el7OVuh+/8NZ3HNsGqj+OOkl59/R7/eugUVseGPCniLxl4hi0PwxpFzqV9JyIoV4Qf3nY8Iv+0xAr7L+En7KXh/wv9n1zx+YNe1dcOlkBmztm68g/61h6t8vovelSoyqPQ1zniDB5TC9eV5dIrd/5LzZ8hn4d+NF+G8nj2Tw9dx+HkkSP7bIu0NuOAyqeSmcDfjGSBmvQv2Vv+Tm9E/643X/pO9ffeq6NpmteHbrQ9Ts4rjT7qBrea3YfK0bDBX24/Kvjn4W/DrUPhf8At0WXhm7MktsIbqewumH/AB8W7QSbW/3hgq3uD6iumWH9lOLXc+Tw/FazfAYyjViozUJNLvG35rr67H2pRRRXpH5IFFFFAHg37Xkgg/ZyF06ymK313S55DHG0hVEu0ZmwoJOACeBV/wD4av8AgMwKxeM7ueTnbHDomoOzewAg5Ne1UnHr+tAHhnwD0/WdQ+IHxO+Jlx4d1Dw7ofivVLWbStN1GA287pBb+VJdPCeUMzfNg4Y4yexMurQSn/goT4cuRC5iHga+QybDtB+2w4GemevFe38UUAeR/Hjwb4m1nSvDXjjwLZpfeKfBuqrq9pYO4T7fCUMdxahj91njY4PqoHes2L9qf4HS6WB4g8RS6HqcYAn0LWNNniv4JP8AnmYPLLM3b5NwPY17dTDFGZFkKKXXgMRyPxoA+Yvh5Nq/jv8Aa68Y6t4j8JXeiaDrngqG202yvYTDO9j9qljLTpjEckjGVwh+YIyZwatfDf4lWfwD8KwfCP41y3OiJoZa00XxNPbSNp+rWQY+SfORSsUqoQrRvjG0EE5r6W4prIjoVdQynggjINAHyD8ffijpnxQ+E8ulfCTS5dd0Sz1Gwutb8QRWckdrHGl5FsggdkHnStIUY7MqqKxJ5Arp/iD468MfDb9vrSvE3jPUJ9N0mXwFNZLdLaT3CmZtQDhMRIxztRjyMcfSvphVVVCqAABgAdqWgDxdP2r/AIBySKieOZizEAD+xr/r/wB+Kg8CRTD9uD4tXBikWGTR9C2OVIViEnzg9DjNe30UAJiviCWyvB/wSLu7X7HcfaP7Wc+SIm34/wCEgz93GenNfcFFACY4PWvl/QdPXw9fftO+C7Cze1sYw2rWdpHEVjP2vTC0jRDGCDIhBC9xX1DRQB8p6npWpaV+xL8HPidpFhcTa34A07S9XNvCn76ezNukV7bjPTdCzH6ximW/h/V3/YF+KfjvXbKePxH470/UfEFzA6kyQxSxFbWDpnCQLGAOxY19X0UAfKuu6P8A8LXvvg98ErqG9Gg2mgW3ijxI0LyW52RW6xWsAlXBVmmYsQCGAQEetdh4n/ZJ+Fev+DdT0ZP+ElSW6tniiluPEeoXCRyEfI5jkmZX2ttbDAjiveqKAPjDxH8QLrUf2a/gx4h8bx3dpqXhX4g2Fj4kZoJJWhks1njllYKpZgyhXyAfv17MP2sfgD/0PU3/AIJr/wD+MV7TRQBj+GfE+h+MvCFn4m8N3pvNLvUL285heIuAxUna6qw5U9QK8j/Z9gmh+IHxraWGSMSeObh0LqV3D7PDyM9R717pRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAHoa/N79ov/k5zxZ/18R/+iY6/SE9DXzHafBvwV8Sv2ovHWseJ9Va7bTL6FW0GPMe9TBGVkkfOWQ4YbVxypye1cuKg5pRXc+y4MzGll1etia9+VQ6K/wBqP9a6HzN8Nfg/41+KWp+V4esPK09G2z6rdArbw+oz1dv9lcn1x1r7i+FXwF8FfC23S7tYP7U10riTVrtAXGeoiXpEv05PcmvStP06w0nTINO0yzgs7OBAkVvboESNR2VRwBVmnRw0aer1ZjnvF2LzS9OHuUuy6+r6+mwVyniL4m/D/wAJanHp3iTxho+m3j4xb3FyquM9CV6qPc4rwD9pb46ePPB/iaTwN4dsH0OKWBZhrRIaW5Rhg+R2TBypPLZHGOCfjuaae4upLieaSaeVi8ksjFndj1LE8k+5rOti+R8sUenkPA88dRWJxNTljJXSVm35t7L01fex+tNvcW93aRXVpPHPBKoeOWJgyupGQQRwQR3FS18/fsgT69L8BJE1QSnT4tRlTTGkzzDhSwX/AGBIXx75HavoBt2w7Rk44GcZrqpz54qR8fmeC+o4uphubm5Xa/8AX4+Z8C/tdJar+0fIbfb5raXbGfH9/MgGffaF/SvCK+0PEv7KfiDx9431Xxd4t+INtbX+oTGTyLGwaWOFQNqRhndSQqhRnAzjPevJfiL+yv488E6TNrOk3EHibToFLy/Y4mjuIlHVjESdwHfaSfavMrUajk520P2LIeIMtp4ejgvbpzUUuqV7bJtJeh6D+yN8W8E/CvXrrj5ptGkkP1aS3/m6/wDAh2FfXdfkrp9/eaXqtrqem3UlteWsqzwTxnDRupyrD6ECv0p+DfxMsvil8MLTXo/Li1GL/R9RtVP+pnUDOB/dYYZfY46g104OtzLkfQ+R47yH6vV/tCivdn8XlLv8/wA/U9Br5f8AGH7JNt4m+ONzrllq8Wk+GL3/AEq6toEzOs5J3pECNqq33txztJICnivqCiuqpTjPSR8dlubYrLZynhZcrkrP+u/Y5zwZ4D8KfD/w8ujeFNIhsLfgyMvzSTN/ekc8u3ufwxXR0hIAyTgV89/Fr9qfwz4ONxongsQeIdcXKPMrZtLVv9ph/rGH91Tj1YdKUpxpx10QYTBYzNsQ40k5ze7f5tv9T2fxb4z8M+BfDsmt+KdXt9Os04DSn5pG/uoo5dvYA188eEfjfB8Xf2sPDFtp3h+Kx0zTVvWtrm4GbuXdbuDuIOEQ4B2DPIBJ7V8n+LfGfibx14ifW/FWrz6jeNkKZDhIl/uxoOEX2A+ua9L/AGVv+TmtE/643X/pO9cLxTqTUVtc/RocHUcsy6viK0uaqoS9F7r27+r+5H6FUUUV6R+ThRRRQB4n+1f4+8V/DT9l/WfF3gvVBpusW1xaxxXJhjm2h51RhtkUqcgkdK/O/wD4ba/aX/6KKv8A4KbL/wCM191/t1/8mU+Iv+vux/8ASlK/KXw7bQXni7S7W5jEkMt3DHIh6MpkUEfkaAPb/wDhtn9pj/ooY/8ABTZf/Gantf24v2k7aYPL45trle6TaRaYP/fMYP61+hA/ZF/ZyI/5JZpX/f64/wDjleb/ABq/Yp+C958JNd1XwZoDeGdc0+xmvLae1upXikaNC+ySORmG1tpGRgjIPOMEA4H4Hf8ABQK41vxZY+F/i/o+nWMd5KsEWvaaGijidjhfPiYnCkkAupAXqVxkj7yByMivwD6H8K/cf4O319qX7PPgXUdTLte3Hh+wlnZ/vM7W6Ek+5PNAH50/Fb9r39obw18dvGXh3RfHYt9N07W7y0tYf7LtH8uKOZlRdzREnAAGSSa+7v2YPGvib4ifsr+FvGHjDUf7Q1q+Fybi58lIt+y6lRflQBRhVUcDtXlvizVP2EY/Hutx+LIvBf8Ab63841Lz7KdpPtPmHzdxC4Lb92SO+a9++FU3w6n+EulS/CgWA8It5v2EafGyQ/61/M2hgCP3m/Oe+aAOyoqhrWuaN4c0SfWNf1Wy0vT7dd013ezLDFGPVmYgCvA9e/bh/Z20S9e1i8XXerOhwx03TppUz7OwVT9QTQB9F0V836R+3R+zrql2lvP4p1DSy5wHvtMmVM+7IGA+pr3vw74m8PeLvD8Gu+F9asNY02cfu7uxmWaNvUblPUdx1FAGrRXL+O/iL4L+GfhyLXvHWv2+i6dNcLax3E6uwaUqzBcKCc4Rj+Fc54M/aD+DnxC8WReGfBvjuw1bVpUeRLWGOVWZUGWPzIBwOetAHpdFeNfEn9qX4KfCzW5NE8SeLUm1eI7ZdO02FruWE+kmz5UP+yxB9q3rD46/DS8+Bll8XbnXjpvhS8cxx3l9A8ZDCVotrIASDvRh6d+lAHo9FeWeFf2j/gl428X2Xhfwt8QdO1LV71mW3tIo5g0hVS5ALIB91Sevasr4i/tV/A/4Za1NoniDxjHcatC2yaw0uFruSJu6uUG1GH91mB9qAPaKK+f/AAj+2h+z74u1mLSovGL6RdTMFjGsWj2sbE9vNOUX/gTCvfkdJI1kjYMrDIZTkEetADqKK8f+IX7UPwQ+Gepy6V4l8cWr6pEdsmn6dG95NGf7riMEIfZiDQB7BRXzbo37dP7O+railpP4l1LS952rLf6ZKsefdkDYHucV9BaJrui+JdCtta8P6rZ6pp1ym+G7s5llikHqrKSDQBoUUUUABr8qviT+2H+0P4f+M3i7QtJ8fLBYafrV5aW0P9l2jeXFHO6IuTEScAAZJzX6qnpX4bfGL/k4rx9/2Meo/wDpTJQB+o/7HHxL8afFX9nifxP471gapqi6xcWonFvHBiNUiKrtjVR1ZucZ5r6Cr5R/4J6/8mk3P/YwXX/ouGvq6gAooooAKK84+Ifx6+EfwrnNr438cadp16F3fYELXFzg9CYowzAHsSAK8ob9vj9nxbkxDU9fZP8AnqNKfb+pz+lAH09RXk3w+/aX+CfxN1OLSvCnjuxk1OU7Y7C8R7SeQ+iLKF3n2UmvWe1ABRXkuv8A7TfwJ8L+J7/w7r/xG02x1Owma3uraSKYtFIpwVJCEcexrq0+Kfw8f4WRfEg+LdNi8KyoXj1aeTyonAYpgbgCTuVgBjJI4BoA6+ivC/Bf7XPwW+IHxVsfAHhTWdSvtSvndLaU6fJHBIURnOGbBHyo3JAr2HX/ABHoPhXw/PrniXWLHSdNtxulu72ZYY0+rMQMnsOpoA06K+b9Z/bn/Z20m8e2g8UahqpQ4L6fpkzJn2ZwoP1HFXPDn7bH7O/iK/SyPjSTSZpDhf7WspbdPxkwUX6kigD6EoqCyvrLUtPhv9Ou4Lu0nQSRXFvIJI5FPRlYZBB9RU9ABRXm3xH+Pnwk+E8n2fxx40sbG+Khhp8Qa4uSD0JijDMoPYsAK8vs/wBvP9ni6v1t5tc1qzjJx9on0qXYPf5dzfpQB9M0VgeEPG/hLx94cj17wZ4h0/W9Oc7fPspQ4Vv7rDqrf7LAH2rbuJ4bW1lubhwkUSF3c9FUDJP5CgCSivFP+Guf2cv+iqaV/wB+Z/8A43XU/EP44fC34WaTbX/jfxfZad9riE1rbANLcToejJEgLlf9rGPegD0KivmjT/28P2d73UVtp9f1ewRm2/aLrSpfLHudm4gfhX0F4c8TeH/F/hu21/wvrNlq2mXK7obuzlEkb+oyO46EHkHrQBq0UUUAB6GvhHx18QtS+GP7c+u+KLEPLClzHDe2qnH2m3aKPen14DL6Mo96+7j0Nfm9+0X/AMnN+LP+viP/ANEx1yYxuMU13Pu+AqFPEYutRqq8ZU2mvnE/RHR9b0zXvDdnr2lXkdzp95AtxDOp4ZGGQfb39Oa8G+Kv7U2h+HLiTw58PIY/EmvM3k+fHl7WFycYG3mZ/wDZTj37V8veA9X8f+NLXTPgvpXjBdL0e/unKw3EvlRksNzIWA3MpwSIs4LE+tfa3wq+Angn4W20d3aW/wDamu7cSatdoN49REvSJfpye5NKNWdZe5p3YYzJcvyGq5Y6XtZbwgtLro5P9F+KPnqT9nr4x/EzQNU8d+Pdalj11rdpNP0u75lkI+YRsowtupGQFHOSM45rd+En7IzSC3174pttXh00G3k5PtPIp/8AHEP1btX15SO6xxs7sFVRkknAAq1hYJ3epwVeM8xnSlQptQi9uVW5V2Xb8+zIbKys9N06Cw0+1htbWBBHFBCgRI1AwFUDgAelT5FfN/xa/au0DwuZ9D8ALb69q6ko98Tmztz04IP71h6L8v8Atdq+X7j46fF658RDWn+IGspcB94jikCQDnp5IGwr7EGlUxcIOy1Nst4JzDH0/bTtBPbmvd/LdfP7j9MKOtcR8IvG83xE+Dei+K7uBILu5iZLmNBhRLG5Ryv+ySpI9M4rt66YtSV0fJ4ihPD1ZUaitKLafqtD4N/aq+F1n4J+IVt4n0O2W30nXi7PBGMLBdLy4A7K4O4D1D1xvwK+Kk3ws+J8N/cyOdDvtttqcQ5xHn5ZQP7yEk+4LDvX05+2UlsfgNp7S7fOGtQ+V6/6uXd+lfCteVXXs6t4n7Zw1P8AtfJVSxfvLWL80tn6rTXurn63W9xDdWkV1bSpNDKgeOSM5V1IyCD3BHNcr49+Jfg74baF/afirVkt94PkWsfzz3B9I4xyfrwB3Ir4u8F/tPeLvBPwYXwXYWMF1f27mOw1K6beLa3I+55f8bKc7cnAGAc4xXjuua9rXibXZ9a8QapdalqE5zJcXL7mPsOwA7AYA7CuieNXL7q1PlcB4fVpYiX1udqaelt5L9Pnr5dT1j4s/tI+MfiOZtJ01pNA8OtlTZW8n724X/ptIOoP9xcL67q8W6DA4A7UUV585ym7yZ+n4LAYfA0lRw0FGPl+vd+oV7R+yt/yc1on/XG6/wDSd68Xr2j9lb/k5rRP+uN1/wCk71VH+JH1OTPv+RbiP8EvyZ+hVFFFe4fzmFFFFAHzd+3X/wAmU+Iv+vux/wDSlK/J7Sb7+zNdstR8rzfs08c2zON21g2M9ulfrD+3X/yZT4i/6+7H/wBKUr8odDs4dR8TadYXBYRXFzFC+w4O1nCnHvg0Afef/Dy+Ef8ANHn/APB6P/jFcD8Wv2/vFnj74e6l4R8MeDbXwzDqUDWt1evem7m8pxtdY/kRUJBI3EE4Jxg8j6KH/BPT4Dn/AJfvGP8A4MYv/jNYvin/AIJz/Cy88PTJ4S8UeJdL1UKfJlvpYrqAtjgOgjVse4bP1oA+Nv2avgfZ/G74rQaRq3ijStI0y2dZLq2ku1S9vEHJjtoicsSBgv0UHPJwD+xlnZ22n6db2NlAkFtbxrFFFGMKiKAFUewAAr8Itb0nXPAnxAv9EvXkstZ0W+ktpHgkKtFNE5UsjjB4Zchh7Gv1z/ZN+LGo/F/9mrTNd12YT63p8z6XqM/A86WMKVkI9WR0J/2t2KAPyz+OhP8Aw098Q+T/AMjJqH/pQ9fp/wDsVn/jBzwQf9m8/wDS2evy/wDjp/yc/wDEP/sZNQ/9KHr9QP2Kv+THfBH+7ef+ls9AHwZ+2L8Z9d+Jf7QOs+HF1CRfDPhy8k0+ysUfEbSRkpLOw6M7MGAJ6KAB3z137On7E0/xi+GUPxA8UeLJtE0q9kkSwtrO3WWadUYo0jMxAQblYAYJOM8cV9efGz9pf4I/BnWZdF1mxTXPEmA8ul6ZaxSSQ7uQZpGwqEg5xktgg4wRXzrqv/BSLVI1Nv4U+E+mWVunEf23UWk/8cjRAPoDQB5p+05+yHL8B/CVh4x0TxTJrei3F2tjNHdQLDPbyMrMhypIdSEYZwCDjrnhP2E/iHr/AIZ/ak0zwfbXkx0XxGs1veWZbKGRIXkjlA6BwU25/usRXJfGn9oz4wfHjwzEPEtpBZ+F7K6WQW+lWbpbCchghklYsWfBfALY64FN/Y6/5Pc8Bf8AXzcf+ks1AH2j/wAFFD/xizo5H/QyW/8A6T3FfnV8PPiJr/wz8S3fiHwzL5GqS6fcWMF0GIa285djSJ/thc4PYkHtX6K/8FFP+TV9H/7GS3/9J7ivg/8AZv8ABenfED9qfwX4V1eBbjT7i/8AOuYWGVljhRpmRvZhHtPsaANjwT+yz8e/iZoaeJ9E8FXJ0+6/fR3up3Mdr9ozzvUSsGcHruxg+pr6f+KvgnxL8OP+CRum+DPF1gthrNhqMYuLdZklC77+R1+ZCVOVZTwe9feUaJHEqIioqgAKowAPQV80ft5f8maat/2EbL/0cKAPy28I+JvEfhLxfba54UvJ7TWI0lhtp4BmRDLG0RKejbZGAI5BII5r6n8Nf8E8/izr3haLWNe8S6Dod/cp5o06582aWMnnErIMK3rjdivDP2cdOttV/ay+HtneRrJCddtpGRhkNsfeAfxUV+1o+6KAPwr+Ifw/8TfC74jaj4J8W2qW+qWDgP5T745FYBlkRv4lZSCDwexAIIr9Hv8Agn78R9U8X/AHUfCusXcl1N4YvEt7aSRtzLayoWjQk8nayyAei7R0FfOn/BRa2hh/aj0aaKMK83huBpCP4iLi4UH8gBXof/BNAnZ8SVycf8S7/wBuKAOm/bn/AGkNX8EQwfCbwLqMljq1/bC41bULdtsttA+QkMbDlXfBJIwQu3H3sj5E+A/7NPj74/Xt5daJNa6ZollII7vV7/cU8wjPlxqvMj4IJHAAIyRkZoftQatdaz+2D8Qru8cvJHrM1opJzhIcRIP++UFdV8Jv2wviV8HPhlbeCPCmheE5bCCaWfzr61meaR5G3EsVmUHsBx0AoA7L4r/sE+Pfh38Pb7xdoPiiw8VQadE1xd2sVq9tcLEoyzopZg+0AkjIOAcA9K4L9lz9oPWfgl8VrSG9v5n8HanOsOrWLMSkYYhRcoP4XTgnH3lBB7EegS/8FEfjXNC8UvhvwI8bgqyNY3BDA9QR9o6V8lTP511JKsccIdiQiH5UBPQZPQUAfvvG6SxLJGysjDIZTkEeop1ebfs+6zc6/wDsteANVvXL3EuhWqyOTkuyRhCx9ztzXpNAAelfht8Yv+TivH3/AGMeo/8ApTJX7knpX4bfGL/k4rx9/wBjHqP/AKUyUAfo3/wT1/5NJuf+xguv/RcNfV1fKP8AwT1/5NJuf+xguv8A0XDX1dQAV4j+1d8WdR+D37NupeIdDkWLW76ePS9OmbB8mWQMTJg9SqJIw7ZAzxXt1Yni7WfC3h3whea/4yu7Cz0awTz7i5vgDHGBwDyDkknAAGSSAMk0Afid4F8IeJvjD8ZtM8J2N6bjWteuyr3l7KznOC8ksjcs2FV2PUnFfcJ/4Jr+Hf7B2f8AC0dU/tLy/wDXf2bH5O/H9zfux/wLNS+Kv+Cg3wx0LVJU+H/wzu9ZeIlY726MWno3+0oCO+PqFPtXm2uf8FFfitqsLWfhnwZ4a0yWb5UdxNeSqT/dG5VJ+qn6UAfKnjbwpq/w5+J+s+ENUlT+0dGvntXlt2O1mRuHQ8HBGGHQ8iv1q/ZL+IGt/Ef9lDw9rviS6e71WAzWFxdSHLTmGQqrse7FNmT3OT3r8jfGOoeJ9W8d6rqvjM3ja/d3DXF8byIxSmR/mJZCBt6jAwABjAxX6ifsFf8AJm9h/wBhO9/9GCgD89f2lmI/a8+InJ/5Dtz/AOhVXh1b4m/GfTfB/wAKfDOlahqsGgWbw2Gk2ILruaRpJbiTsCTIFLMQFUKMjJzP+0v/AMnd/EX/ALDtz/6FX3b/AME9vBGlaP8As5XXjNbaNtU13UZVe5I+YQQHy0jB9N4kb3LewoA8c/Zv/ZP+OPw7/ab8H+NvFfhW3tNIsZZnupU1K3leENbSoMorkn5mUcZ6153+3D8UNd8ZftMar4RkvZV0Hwy62dpZhsIZtimWZh3csxXPZVA9c/rGRkYr84/2y/2WPHU/xW1T4reAtGutf0rVis9/ZWKGS4s5ggVmEY+Z4227srkglgQBgkA5P9mr9jew+N3wvl8da943m0y1a7ktILOwt0lkzHjc0jMcLnPC4zjnPNZf7SH7HWr/AAS0Gy8UeHden8S6Jc3Is5ENoY7i2kZWZchCQyEIw3DGDgY5rxjwP8Uvij8H9Yuf+EM8T6r4enZx9ptB/q3YdPMhkBUkdOVzX0N4S/4KI/FzSJEi8V6B4e8RwAjeyxtZTt/wJCUH/fFAHS/sAfEbxhovxJuvhTrUOotoGo20t3YpcROFtLmMbmCEjCq6b8jpuVSOSc/QX7Y/7Qd58FvhhbaR4WnSPxZr++O0mIDfYoVwJJ8H+LLBUzxkk87cHp/gP+1D8PvjxHLYaOLnSPENtF50+jXzAuUzgvE44kQEgE8EZGQMivhP9v3V7rUf2v7mwnkYxabpVpbQrngBlMp/8ekP5UAeWfCf4Q/EP9oX4lXWm6DL9puf+PrU9Y1OZjHCGb78r8szsc4AyzEHsCR9B+Kv+Ccvj3SPCVxqXhrxxpOvajDGZP7Na0e1MpAzsjkLMCx7bgoJ7ivFvgl+0146+A+g6rpfg7RvDdyup3CXFxNqdvLJISi7VUFJU+UZY4x1Y16l/wAPFfjeR/yL3gb/AMA7j/5IoA8M+D/xc8ZfAr4rw+IdElnjEcog1TSpSVS8iDfPFIp6MOcNjKtz6g/sXF4k0rxh8Gv+Ep0Ofz9O1TSWvLaToSjwlhkdjzgjsQa/Enxn4nvPG3xB1jxff2VjZ3eq3cl7PBYqUhWRzubarMSASSep61+nX7HGtXGrfsCRW1xIZP7NOo2SMTk7AWkA/DzMfhQB+VJZs9TX1L8P/wBmT40/tPx3HxV8QeILHTrPUHKw32qb2e5VPkAhiQcRLt2DJA+XAB618s/xfh/Sv3G+DWm22kfs7+BdOtI1SKHQLFQAOp8hCT+JJP40Afkz8eP2cfHHwC1bT08Rz2Oo6bqO8WmpWBby2ZMFkdWAKOAQccgjoTg49f8A+CfPxH1XQ/j9cfDyS7dtI8Q2ksq2zMdqXUKeYsijsTGrqcdflz90V9Df8FErOCf9lfTLp0Blg8RW5RscjdDOCP8APpXxl+xiSP24PAuD/wAtbr/0jmoA/YWigdBRQAHoa/N79ov/AJOb8Wf9fEf/AKJjr9IT0Nfm9+0X/wAnN+LP+viP/wBEx1xY74F6n6B4df7/AFf8D/8ASonmVvcT2l5FdWs8kE8LrJFLGcNGynIYHsQQCK/SD4F/FOD4p/DCDUZ3jXWrLFtqcC8YlA4kA/uuPmHodw7V+bdeg/Br4mXnwt+KFprqmSTTZ8W2pWy/8tYCfvAf3kPzD6EdzXJh63s5a7M+64ryJZrhHyL95DWPn3Xz/Ox+mNeYfGn4ifDnwp4Dv9E8b3X2o6lavANItGDXNwrDGQM/IP8AbbAGO/SvIviD+1Dq3iLWR4L+B+lXOo39wTGNU+zlnb1MERHQf89HwB6d6u/Db9lgzap/wl/xl1B9c1ed/OfTWmMqbvWeXOZT/sj5R/tCu+VZz92mr+fQ/MsLklPARji82m6fWMF8b/8AkV5v8D4wliZCrrFKkMgLQmQffTJAIOAD0xkcZBr0v4U/Azxl8VL+Keyt203QQ+JtYuUPl4HURL/y1b6fKO5Ffdnir4RfD/xpfaJc+IPD1tcDRsrawIPLi2ED92yrgMgIBC9Mj3IPZ29vBaWsdtawRwwxKEjjjUKqKOAABwB7VhDBa+89D6HHeIblh1HCU+Wo929UvTu7d7JdmZHhHwtpPgnwTpvhbQ4mjsbCERR7zlm5yzMe7MSSfc1t1U1LU9O0bSp9T1W+t7Kzt0LzXFxIESNfUseBXxl8cv2oLrxKlz4T+HNxNZ6O2YrnVgDHNdr0Kxd44z/e4ZvYdeqpVjSjqfG5Vk2MzrEP2et3eUnsr73fV+W7M39q74paf4z8a2XhLQLpLnTdEZ2nuIzlJrpvlIU9wigrn1ZvSvnejoMDpRXkVJucnJn7vlmX08uw0MLS2j+L6v5sKKKKg7wooooAK9o/ZW/5Oa0T/rjdf+k714vXtH7K3/JzWif9cbr/ANJ3rSj/ABI+p5Off8i3Ef4Jfkz9CqKKK9w/nMKKKKAPm79uv/kynxF/192P/pSlflN4bmhtvGOlXFxKkUUd5C7u5wFUSKSSfQCv11/a+8H+JvHX7KWt+HPCOjXOr6rPc2jx2lsAXYJOrMRkjoATX5r/APDK37Qv/RKPEH/ftP8A4qgD9Tx+0V8CAP8Akr/gvr/0Fof/AIqsjxJ+1X8APDWgzancfE3Q9R8tSVtdJnF5PKeyqkeeT0ySB6kV+Y//AAyt+0L/ANEo8Qf9+0/+KqSD9lD9om4mWGP4Va4GbgeZ5Ua/izOAKAOB+I3i5vH3xb8S+NGtfsv9s6lPfC3znyhI5YLnuQCBmv0l/wCCe3hu/wBF/ZXu9VvY3jj1nW57u23DG6JEjh3D6vG4/CvDvhF/wT18Yalrdtqfxd1G10XSo2DyaVYTie7nA/gMi/JGD6gsfQDrX6KaNo2l+HfDtloWiWMNjp1jClvbW0K7UijUYVQPQAUAfih8dP8Ak5/4h/8AYyah/wClD1+nH7HNw1p+wR4RukTe0UN/IE/vEXc5x+lfmP8AHT/k5/4h/wDYyah/6UPX6gfsVjP7Dfgkf7N5/wCls9AH5Ia7rWpeJPE+oa/rFy9zqF/cSXVxNIcs8jsWYn8TX60/s4fAn4Q+HPgR4U13T/C+i6vqmpaZb31xrN5bpcyySyRq7BGcHYoJ2hVxjbzk5NfHP7RH7F/xD8I+P9T1/wCHHh668SeFbyZ7mCHTk825sdxLGFoh8zKuSFZQeAM4NedeB5v2r/CtoPDXgW0+KGm2xc4sLO0u1jRieSEK7UJPUjFAH19/wUQ8SaBpHwB0DwNA9vFqV9q6XkVnFhSkEUcgZ9o6Dc6KPXnHQ18i/sdf8nueAv8Ar5uP/SWau21H9kD9ozxd4A1v4k+NV1G98RgQm10i8ufteo326VVYuS5EaohLBSS3GMCn/s+fAf45eAf2nPBfizWfhf4gt9Os9SQXU5iTEUUitGzn5uihyT7A0AfS/wDwUU/5NX0f/sZLf/0nuK+Of2K/+T4PBP8AvXn/AKRzV90/tweAfGPxE/Z40vQ/BPh681vUItdguXt7QAssawTqXOSOMso/EV8v/sqfAD4y+Cv2tvCXiXxT8PNZ0vSbVrnz7y4RQke61lVc4buzAfjQB+nA6V8z/t5f8maat/2EbL/0cK+mK8D/AGxPBvijx5+y1qXh3whol1rGqS31pIlrbAFyqy5Y8kdBQB+bP7L3/J4Pw8/7DMP9a/aFfuD6V+Vv7P37Ovxt8L/tOeCfEGv/AA31uw0yy1WKa5upkQJEgzlj83Sv1SX7o+lAH5h/8FG/+TnNA/7FmH/0puK77/gmhyvxJH/YO/8Abim/ty/Bf4p/Eb9oDR9Z8EeCNV1vT4dAitpLm0VSiyi4nYpyw5AZT+Irsv2CfhX8Q/hofHY8d+EtR0L7d9h+ym8VR52zz923BPTcufqKAPlH9s/wPe+DP2vfEk8sDLZa4y6xaSkcSCUfvPxEqyD8vWvpz9hDXfhd4u+DDeAtc0Xw7ceKdIupnWK9s4XnuraRvMWRSy5fazOpHO0BexFfQH7Qv7P3hz4+fD1NJ1CYadrdiWl0vVVTebd2A3I4/ijbA3DOcgEcjn8z/Gv7LXx9+GmuM0ngjVtRjgfMOqeHke8jbHRgYxvT/gSqaAP1X17wx8IvC/h2617xF4a8IaZplohknu7vT7eOONR6kp+nU9q+O5/21fgQdalstL+AEd+nnGK3kS0s1acbsKQhjyC3Hy9ecV8of8K+/aD8d3MGnXHhL4ha2UOI1vLW7kSP8ZBtX65FfYP7LX7E2reFPF1j8Rvi9FbR3ti6z6boMcizeVMOVlncZXKnlUUnnBJ4xQB9uaFFHD4ZsI49Ij0hRbof7PiChbYlQTGNoC/KSRxxxWhR2ooAD0r8NvjF/wAnFePv+xj1H/0pkr9yTX5G/E/9mj476z8b/GWr6Z8MddubK81y9ubeeONNskb3DsrD5uhBB/GgD3r9i/4/fCD4afs4z+HfHPja00fU21m4uRbSwTOTGyRBWyiEclW79q+if+GwP2bv+ipad/4C3P8A8ar80v8Ahlf9oYdPhT4h/wC/af8AxVH/AAyv+0N/0SnxD/37T/4qgD9Lf+GwP2bv+ipad/4C3P8A8ar5+/4KM+Lbqf4b/DzS9JvHfRdYmuNRdkJCz+XHF5JPtidjg+3pXyoP2WP2hgf+SU+If+/af/FV+h3xw/Z7ufjV+y14d8NxSR6b4q0S0t57FrrhBKIFSSCQjOFbGMjOGVTyAaAPhT9jP4aeCvih+0kujeOYY7yws9Omv4tPkcqt5KjooRsEFlAdnKjrt54zX6r6T4R8FeELAnQvDehaHb26ZLWdnFbrGoHJJUDAA71+O2pfBb4+fDPxfHOfAnjDS9Ss5N0GoaXbSyBWHG6OeDI/ENXpOm+E/wBtT40WK+Gb9/iBLo9x8kza7PLZWjL3Mhk2+YPbDH2NAHk3x48Uab40/aU8beJtGnE+nXurzvazL0liDbVcezBQfxr9HP2Cv+TN7D/sJ3v/AKMFfE/j79jL41+FPHE+ieH/AArqPimxihhZdVsIQsMrtGrSKoZs4Vyy84J25wM4r7n/AGK/C3jPwT+zjP4U8ceGNR0LULTVZ3iivEC+bFIqMGUgn+LePwoA/OX9pf8A5O7+Iv8A2Hbn/wBCr9Gv2Fv+TJvDX/X1ff8ApVJXxt8ef2c/jf4m/aX8ca/oXw21u+02+1iee2uYkQpKhbhh83Q19yfsheEPEvgX9lDQfDfi7RrnSNVguLtpbS5ADoHuHZScE9QQaAPdK+HPG/8AwUHvfBXxK1/wfefCESTaRqM9g0ra0U8zy5Cm/HkHGQAep619x18ZftYfsb33xP8AE03xI+GklrF4imRRqGlXDiJL4qAqyRueFkwACGwrYByDncAe4+Bb/wCGf7SPwU0jxrrPg7w9qkeoQbbi0vYIrxrOZTh4i7KCGUjrgEgg9CK+Uf2y/wBmH4R/Dv4SN8Q/BMTeHb9b2K3/ALMW4aS3vPMOCI1ckoygF/lOMK3HQ1866b4L/ai+Derz/wBheHPiJ4blkOJn0u3uDDLj1aIGN/Y803UfAv7T/wAZNbhk1zwz8QvElwnywy6rbziKIHsrS7UQevSgCH9lS41O2/bH+H7aU7rM+qLG+w9YWVhKD7eWXzXs/wDwUS8D3mlfHLRfHUcLHT9b01bZpccC4gJBUn3jeMj1w3pXu/7JX7IV58I9Y/4WF8Q5bWbxSYWhsrC2cSR6crjDszjhpSMr8vyqC3LbuPoX4t/Cnwv8ZPhfe+CvFML+RMRLb3UWPNtJ1zsljJ7jJBHQgkHg0AfCn7AXij4cTX/iD4deNtN0GXU76aO90mTU7aGQzkLslhVnH3uEYKDz82Ohr73ufAXw0srOW7u/Bvha3t4kLySzabboiKOSSxXAHua/LL4mfsa/HD4daxMdP8N3PivSkYmHUtCjM5ZexaEZkRsdeCPRjXEv4P8A2g/EUCeH5vDPxH1KEEKtjNaXsiKf9xhgUAfYfi/9sb9nfw/441LRNF+DmneIbK0lMMeqWlrZpDc4HzMgaPJXOQD3AyODX1N4L1aw8Q/s3weJNN8Ip4VttV0uW+j0oJGhiWRGKsRGAuWXa3TPzDNfEH7Pn7CXi3VvFFl4n+Mtiuj6Fbusw0R5A9zfEHISQKSIoz3ydxGRgZyP0U1m0LeEb+ys4Bk2kkUUUYA/gICgfkKAPwU/i/D+lful8L/+SIeDf+wHY/8ApOlfkd/wyt+0Ln/klHiDp/zzT/4qv15+H1jeaZ8JPC2m6hbvb3drpFpBPDJ96N1hRWU+4IIoA+cv+Chn/Jpdp/2MNr/6Knr4p/Yy/wCT4PAv/XW6/wDSOavvf9tnwL4u+IX7N1roPgrQLzWtRXW7e4a2tAC4jWOYFuSOAWUfjXyl+yz+z98ZvBn7WvhDxL4o+Hms6ZpNpJcG4vLhFCRhrWVRnDd2YD8aAP08HQUUDpRQAHoa/N79ov8A5Ob8Wf8AXxH/AOiY6/SE9DX5vftF/wDJzfiz/r4j/wDRMdcWO+Bep+geHX+/1f8AA/8A0qJ5dRRRXmH7EfVH7HXjnQbDW9R8DX9jZW+p35NzZagIwJbkKPnt2fqcAb1H+/6CvsqvyW07Ub7SNXtdV0y6ktb20lWeCeM4aN1OVYfQiv0X+H/xu8KeJvghF4717VbLSBaj7PqizSbRBcAcqo6kN95QMkg46g16WErLl5H0PyTjrIakMQsdQTano1vaXT7/AM/VHqVeUfFb4/eC/hdDJZTTf2tr+3KaVaONyehlfpGPrlj2Br59+LX7Weta/wCfofw3WfRtNOUfVJBtu5x/0zH/ACyX35b/AHa+aJJJJpnllkeSR2LO7sWZiepJPJPuaVbGJaQLyHgOdS1bMfdX8q3fq+notfQ7j4kfFzxp8UdV8/xHqG2yjbdb6ZbZS2g9CF/ib/abJ9MdK4WiivPlJyd2fqWHw1LDU1SoxUYrZIKKKKRsFFFFABRRRQAV7R+yt/yc1on/AFxuv/Sd68Xr2j9lb/k5rRP+uN1/6TvWlH+JH1PJz7/kW4j/AAS/Jn6FUUUV7h/OYUUUUAGAetJtX+6PypaKAE2r/dH5UbV9BS0UAFfHX7avx/8Aib8GfEXhaw8Aata2MWqWdy9wZrKOdg6OgVlLg4IDH29q+xa4P4g/Bj4Y/FW5srj4geErXW5bFWS2eaSRDGrEFgCjLwSB1oA/E27utX8SeJ5r27e41HVdSumlkbaXluJpHyTgcszM3QdSa/Z/9nXwTqXw7/Zf8G+ENYh8jUbSx8y6hPWKWV2mdD7qZCp9xV3wb8C/hD8PtSXUfCHw90LTL5PuXiW/mTp/uyOWZfwNehUAFJj6/nS0UAGBjGOKTavoKWigAIB6jNJgA8AUtFABQQD1FFFACbR6CloooAQgHqAaUADoAKKKACjAoooATApaKKACiiigApNq+gpaKAE2r/dH5UbV/uj8qWigBNq/3R+VLRRQAmBS4FFFACYB6gUoAHQYoooATaPQUuAOlFFABRRRQAmB/wDqowP/ANdLRQAUUUUAGKTH1/OlooAOnSiiigBNq/3R+VLRRQAEA9RSYA6AUtFABRRRQAHoa/N79ov/AJOb8Wf9fEf/AKJjr9IT0Nfm/wDtFg/8NN+LOP8Al4j/APRMdcWO+Bep+geHX+/1f8D/APSonltFGD6GjB9DXmH7EFLubZs3HbndtzxnpnHr70mD6GjB9DQAUUYPoaMH0NABRRg+howfQ0AFFGD6GjB9DQAUUYPoaMH0NABRRg+howfQ0AFe0fsrf8nNaJ/1xuv/AEnevF8H0Ne0/srg/wDDTWicf8sbr/0netKP8SPqeTn3/ItxH+CX5M/QmiiivcP5zCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigArkdW+Fvw613WZ9W1jwXot9fXBDS3E9qru5AAySevAFddRSaT3NaNerRfNSk4vydjhP+FL/Cj/AKJ74e/8A1o/4Uv8KP8Aonvh7/wDWu7oqfZx7HT/AGnjP+f0v/An/mcJ/wAKX+FH/RPfD3/gGtH/AApf4Uf9E98Pf+Aa13dFHs49g/tPGf8AP6X/AIE/8zhP+FL/AAo/6J74e/8AANaP+FL/AAo/6J74e/8AANa7uij2cewf2njP+f0v/An/AJnCf8KX+FH/AET3w9/4BrR/wpf4Uf8ARPfD3/gGtd3RR7OPYP7Txn/P6X/gT/zOE/4Uv8KP+ie+Hv8AwDWj/hS/wo/6J74e/wDANa7uij2cewf2njP+f0v/AAJ/5nCf8KX+FH/RPfD3/gGtH/Cl/hR/0T3w9/4BrXd0Uezj2D+08Z/z+l/4E/8AM4T/AIUv8KP+ie+Hv/ANaP8AhS/wo/6J74e/8A1ru6KPZx7B/aeM/wCf0v8AwJ/5nCf8KX+FH/RPfD3/AIBrWhonwz8AeHNZi1bQfB+j6dfRBglzbWyo6hgQcEeoJH411dFNQiuhM8wxU4uMqsmn5v8AzCiiiqOMKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAP/Z';
+
+// ── Opsætning: fag → selskab → skabelon (rutediagrammet) ──
+const FAG = { tmm:'Tømrer · Maler · Murer', kloak:'Kloak' };
+const SELSKABER = {
+  tmm: [
+    { key:'topdanmark', label:'Topdanmark' },
+    { key:'almbrand',   label:'Alm. Brand' },
+  ],
+  kloak: [ { key:'almbrand', label:'Alm. Brand' } ],
+};
+const SKABELON = {
+  'tmm|topdanmark': {
+    aarsager:['Brand','Storm','Vand og vejr','Indbrud, tyveri & hærværk','Pludselig skade','Glas og sanitet','Svamp & insekt','Råd','Skjulte rør & kabler','Stikledning','Udvidet vandskade','Kosmetiske forskelle'],
+    belob:null, regresFelt:false, kloak:false,
+    afskriv:'Angiv eventuelle afskrivninger i henhold til forsikringsvilkår (8805-2 og 8820-2). På Erhverv og Landbrug: beskriv standen før skaden – skadebehandler tager stilling til afskrivning.'
+  },
+  'tmm|almbrand': {
+    aarsager:['Brand','Storm','Skybrud','Skjult rørskade','Svamp, råd, insekt','Pludselig skade','Stikledning','Udvidet vandskade'],
+    belob:25000, regresFelt:true, kloak:false,
+    afskriv:'Angiv eventuelle afskrivninger i henhold til forsikringsvilkår. På Erhverv og Landbrug: beskriv standen før skaden – skadebehandler tager stilling til afskrivning.'
+  },
+  'kloak|almbrand': {
+    aarsager:['Skybrud','Storm','Rørskade','Stikledning','Udvidet vand','Svamp og råd'],
+    belob:40000, regresFelt:true, kloak:true,
+    afskriv:'Kontrollér afskrivningsskemaerne fra Alm. Brand. Angiv eventuelle afskrivninger i henhold til vilkårene. På Erhverv og Landbrug: beskriv standen før skaden.'
+  },
+};
+const AARSAG_TIP = {
+  'Storm':'Storm: Er vindstyrke min. 17,2 m/s bekræftet? Ved hegn/låger – kan råd være den egentlige årsag?',
+  'Skybrud':'Skybrud: Hvor og hvordan er vandet trængt ind i bygningen?',
+  'Rørskade':'Rørskade: Hvor sidder røret – synligt eller skjult? Har kunden udvidet vand?',
+  'Skjult rørskade':'Hvor sidder røret? Hvordan er utætheden fundet (sporing)?',
+  'Stikledning':'Stikledning: Vær OBS på fælles ledninger.',
+  'Udvidet vand':'Udvidet vand: Hvor og hvordan?',
+  'Udvidet vandskade':'Udvidet vandskade: Hvor og hvordan? Er dækningen valgt på policen?',
+  'Svamp og råd':'Er bære- og funktionsevnen nedsat?',
+  'Råd':'Er bære- og funktionsevnen nedsat?',
+};
+
+// ── Medarbejdere (rutediagrammet) ──
+const MEDARB = [
+  { navn:'Henrik Eriksen',     fuld:'Henrik Eriksen',           email:'hse@bjarnelarsen.nu' },
+  { navn:'Simon Poulsen',      fuld:'Simon Østergaard Poulsen', email:'sop@bjarnelarsen.nu', titel:'Håndværkertaksator' },
+  { navn:'Lasse Skou',         fuld:'Lasse Skou',               email:'ls@bjarnelarsen.nu' },
+  { navn:'Marius Meister',     fuld:'Marius Vilsted Meister',   email:'mv@bjarnelarsen.nu' },
+  { navn:'Simon Larsen',       fuld:'Simon Larsen',             email:'shl@bjarnelarsen.nu' },
+  { navn:'Morten Kristensen',  fuld:'Morten Ratke Kristensen',  email:'mrk@bjarnelarsen.nu' },
+  { navn:'Tanja Busch',        fuld:'Tanja Busch',              email:'tgb@bjarnelarsen.nu' },
+];
+
+// ── Tilstand ──
+let session = null, fag = null, selskab = null, currentId = null, result = null;
+const KLADDE = 'bl_besig_kladde_v1';
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sk =() => SKABELON[fag+'|'+selskab];
+const selskabLabel = () => (SELSKABER[fag]||[]).find(s=>s.key===selskab)?.label || '';
+
+// ── Session (samme som portalen) ──
+function loadSession(){ try{ return JSON.parse(localStorage.getItem('bl_session')||'null'); }catch(e){ return null; } }
+function brugerEmail(){ return session?.email || session?.user?.email || ''; }
+async function refresh(){
+  if(!session?.refresh_token) return false;
+  const r = await fetch(SUPA_URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPA_KEY},body:JSON.stringify({refresh_token:session.refresh_token})});
+  if(!r.ok) return false;
+  const d = await r.json();
+  session = {...session, access_token:d.access_token, refresh_token:d.refresh_token||session.refresh_token, user:d.user||session.user};
+  try{ localStorage.setItem('bl_session', JSON.stringify(session)); }catch(e){}
+  return true;
+}
+async function call(url, opts={}, retry=true){
+  const headers = {apikey:SUPA_KEY, Authorization:'Bearer '+session.access_token, ...(opts.headers||{})};
+  const r = await fetch(url, {...opts, headers});
+  if(r.status===401 && retry && await refresh()) return call(url, opts, false);
+  if(r.status===401){ $('app').hidden=true; $('actions').hidden=true; $('gate').hidden=false; throw new Error('Session udløbet'); }
+  return r;
+}
+async function rest(path, method='GET', body=null, prefer){
+  const r = await call(SUPA_URL+'/rest/v1/'+path,{method,headers:{'Content-Type':'application/json',...(prefer?{Prefer:prefer}:{})},body:body?JSON.stringify(body):null});
+  const t = await r.text();
+  if(!r.ok){ let m=t; try{m=JSON.parse(t).message||t}catch(e){} throw new Error(m); }
+  return t?JSON.parse(t):null;
+}
+
+// ── UI: trin ──
+function vaelgFag(f){
+  fag=f; selskab=null;
+  $('crumbFag').textContent=FAG[f];
+  const list=SELSKABER[f];
+  if(list.length===1){ vaelgSelskab(list[0].key); return; }
+  $('selskabValg').innerHTML='';
+  list.forEach(s=>{ const b=document.createElement('button'); b.className='choice'; b.type='button';
+    b.innerHTML=`<b>${s.label}</b><span>${SKABELON[f+'|'+s.key].belob?'Beløbsgrænse '+SKABELON[f+'|'+s.key].belob.toLocaleString('da-DK')+' kr.':'Regres under øvrige forhold'}</span>`;
+    b.onclick=()=>vaelgSelskab(s.key); $('selskabValg').appendChild(b); });
+  $('trin1').hidden=true; $('trin2').hidden=false; $('f').hidden=true; $('actions').hidden=true;
+}
+function vaelgSelskab(s){
+  selskab=s; const c=sk();
+  $('crumbFag2').textContent=FAG[fag]; $('crumbSelskab').textContent=selskabLabel();
+  const sel=$('aarsagType'), cur=sel.value;
+  sel.innerHTML='<option value="">Vælg skadesårsag…</option>'+c.aarsager.map(a=>`<option>${a}</option>`).join('');
+  if(c.aarsager.includes(cur)) sel.value=cur;
+  $('beskrivTmm').hidden=c.kloak; $('beskrivKloak').hidden=!c.kloak;
+  $('andreFagFelt').hidden=!c.kloak;
+  $('belobFelt').hidden=!c.belob;
+  if(c.belob) $('belobLbl').textContent=`Er skaden over eller under ${c.belob.toLocaleString('da-DK')} kr. ex. moms?`;
+  $('afskrivHint').textContent=c.afskriv;
+  $('o-regres-box').hidden=!c.regresFelt;
+  $('trin1').hidden=true; $('trin2').hidden=true; $('f').hidden=false; $('actions').hidden=false;
+  visTip(); gemKladde();
+}
+function nulstilValg(){ fag=null; selskab=null; $('trin1').hidden=false; $('trin2').hidden=true; $('f').hidden=true; $('actions').hidden=true; gemKladde(); }
+function visTip(){
+  const t=AARSAG_TIP[$('aarsagType').value]; const h=$('aarsagTekst');
+  h.placeholder = t || '';
+}
+
+// ── Deltagere ──
+function byggDeltagere(){
+  const me=brugerEmail().toLowerCase();
+  $('blDeltagere').innerHTML=MEDARB.map((m,i)=>`<label class="chip"><input type="checkbox" name="bl" value="${i}" ${m.email===me?'checked':''}> ${m.navn}</label>`).join('');
+}
+const valgteBL = () => [...document.querySelectorAll('input[name="bl"]:checked')].map(c=>MEDARB[+c.value]);
+const radio = n => document.querySelector(`input[name="${n}"]:checked`)?.value || '';
+const v = id => $(id).value.trim();
+
+// ── Formular ↔ data ──
+const TEKSTFELTER=['skadenummer','adresse','dato','ft','daekning','forbehold','aarsagType','aarsagTekst','beskrivelse','k61','k62','k63','k64','reparation','nvh','afskrivning','indbo','klausul','oevrige','regresTekst'];
+function formData(){
+  const d={}; TEKSTFELTER.forEach(k=>d[k]=v(k));
+  d.bl=valgteBL().map(m=>m.email); d.belob=radio('belob'); d.regres=radio('regres'); d.andreFag=radio('andreFag');
+  d.fagValg=[...document.querySelectorAll('input[name="fagValg"]:checked')].map(c=>c.value);
+  return d;
+}
+function setForm(d){
+  d=d||{};
+  TEKSTFELTER.forEach(k=>{ $(k).value=d[k]||''; });
+  if(!$('dato').value) $('dato').value=new Date().toISOString().slice(0,10);
+  document.querySelectorAll('input[name="bl"]').forEach(c=>c.checked=(d.bl||[brugerEmail().toLowerCase()]).includes(MEDARB[+c.value].email));
+  ['belob','regres','andreFag'].forEach(n=>document.querySelectorAll(`input[name="${n}"]`).forEach(r=>r.checked=r.value===d[n]));
+  document.querySelectorAll('input[name="fagValg"]').forEach(c=>c.checked=(d.fagValg||[]).includes(c.value));
+  $('andreFagValg').hidden = d.andreFag!=='Ja';
+  visTip();
+}
+function setResult(r){
+  result=r; $('resultat').hidden=!r; $('btnGem').hidden=!r; $('btnPdf').hidden=!r;
+  $('btnSkriv').textContent = r ? 'Skriv igen' : 'Skriv rapport';
+  if(!r) return;
+  $('o-daekning').value=r.daekning; $('o-aarsag').value=r.aarsag; $('o-beskr').value=r.skadebeskrivelse;
+  $('o-regresValg').value=['Ja','Nej','Ukendt'].includes(r.regresValg)?r.regresValg:'Ukendt'; $('o-regres').value=r.regres;
+  const m=r.mangler||[];
+  $('mangler').hidden=!m.length;
+  $('mangler').innerHTML=m.length?'<b>Tjek inden du taster i Scalepoint:</b><ul>'+m.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>':'';
+}
+function readResult(){
+  if(!result) return null;
+  return {...result, daekning:$('o-daekning').value, aarsag:$('o-aarsag').value, skadebeskrivelse:$('o-beskr').value, regresValg:$('o-regresValg').value, regres:$('o-regres').value};
+}
+function gemKladde(){ try{ localStorage.setItem(KLADDE, JSON.stringify({fag,selskab,currentId,form:formData(),result:readResult()})); }catch(e){} }
+function hentKladde(){ try{ return JSON.parse(localStorage.getItem(KLADDE)||'null'); }catch(e){ return null; } }
+
+// ── Stikord til AI ──
+function stikord(d){
+  const c=sk(); const bl=valgteBL();
+  const L=[];
+  L.push(`Fag: ${FAG[fag]} · Selskab: ${selskabLabel()}`);
+  L.push(`Skadenummer: ${d.skadenummer||'-'} · Adresse: ${d.adresse||'-'} · Besigtigelsesdato: ${d.dato||'-'}`);
+  L.push(`Forbehold og bemærkninger på policen: ${d.forbehold||'ikke oplyst'}`);
+  L.push(`Valgt dækning: ${d.daekning||'ikke valgt'}`);
+  L.push(`4. Deltagere fra Bjarne Larsen ApS: ${bl.map(m=>(m.titel?m.titel+' ':'')+m.fuld).join(', ')||'-'}`);
+  L.push(`4. Forsikringstager/repræsentant: ${d.ft||'-'}`);
+  L.push(`5. Skadesårsag (kategori): ${d.aarsagType||'-'}`);
+  L.push(`5. Skadesårsag (beskrivelse): ${d.aarsagTekst||'-'}`);
+  if(c.kloak){
+    L.push(`6.1 Hvad er skadet og hvor: ${d.k61||'-'}`);
+    L.push(`6.2 Reparation, udskift/reparer og hvorfor: ${d.k62||'-'}`);
+    L.push(`6.3 Materialevalg: ${d.k63||'-'}`);
+    L.push(`6.4 Alder på bygningsdel: ${d.k64||'-'}`);
+  } else {
+    L.push(`6. Skadesbeskrivelse: ${d.beskrivelse||'-'}`);
+  }
+  if(c.belob) L.push(`Over/under ${c.belob} kr. ex. moms: ${d.belob||'-'}`);
+  L.push(`7. Reparation: ${d.reparation||'-'}`);
+  if(c.kloak) L.push(`Andre faggrupper skal rekvireres: ${d.andreFag||'-'}${d.fagValg.length?' ('+d.fagValg.join(', ')+')':''}`);
+  L.push(`8. Netværkshåndværker: ${d.nvh||'-'}`);
+  L.push(`9. Afskrivning: ${d.afskrivning||'-'}`);
+  L.push(`10. Flytning af indbo: ${d.indbo||'-'}`);
+  L.push(`11. Klausul/forbehold: ${d.klausul||'-'}`);
+  L.push(`12. Øvrige forhold: ${d.oevrige||'-'}`);
+  L.push(`Regres: ${d.regres||'-'} · Forklaring: ${d.regresTekst||'-'}`);
+  return L.join('\n');
+}
+function valider(d){
+  const mangler=[];
+  if(!d.skadenummer) mangler.push('skadenummer');
+  if(!d.adresse) mangler.push('adresse');
+  if(!d.bl.length) mangler.push('deltager fra Bjarne Larsen');
+  if(!d.aarsagType && !d.aarsagTekst) mangler.push('skadesårsag');
+  if(!(sk().kloak ? d.k61 : d.beskrivelse)) mangler.push('skadesbeskrivelse');
+  if(!d.regres || !d.regresTekst) mangler.push('regres med forklaring');
+  return mangler;
+}
+
+// ── Status ──
+function status(t, kind=''){ const s=$('status'); s.textContent=t; s.className='status '+kind; }
+
+// ── Skriv rapport (Supabase Edge Function) ──
+$('btnSkriv').onclick = async () => {
+  const d=formData(); const mangler=valider(d);
+  if(mangler.length){ status('Mangler: '+mangler.join(', '),'err'); return; }
+  const c=sk(); const btn=$('btnSkriv'); btn.disabled=true; status('Skriver rapporten… (ca. 20-40 sek.)');
+  try{
+    const r = await call(SUPA_URL+'/functions/v1/besigtigelse-skriv',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ stikord:stikord(d), fagLabel:FAG[fag], selskabLabel:selskabLabel(), selskabKey:selskab,
+        regresFelt:c.regresFelt, belobGraense:c.belob, belobValg:d.belob, andreFag:c.kloak && d.andreFag==='Ja' })});
+    const out = await r.json().catch(()=>({error:'Ugyldigt svar'}));
+    if(!r.ok || out.error) throw new Error(out.error||('Fejl '+r.status));
+    setResult(out); gemKladde();
+    status('Rapporten er klar. Ret evt. teksten, og tryk Gem og send.','ok');
+    $('resultat').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(e){ status('Kunne ikke skrive rapporten: '+e.message,'err'); }
+  finally{ btn.disabled=false; }
+};
+
+// ── PDF ──
+function byggPdf(row){
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,M=18,TW=W-2*M; let y=14; const red=[184,28,43];
+  try{ doc.addImage(LOGO,'JPEG',M,y,56,14.8); }catch(e){}
+  y+=22;
+  doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.setTextColor(20,20,20); doc.text('Besigtigelsesrapport',M,y); y+=3;
+  doc.setDrawColor(...red); doc.setLineWidth(0.8); doc.line(M,y,W-M,y); y+=7;
+  const o=row.output||{};
+  const meta=[['Selskab',row.selskab],['Fag',row.fag],['Skadenummer',row.skadenummer],['Adresse',row.adresse],['Besigtiget',row.besigtigelsesdato?row.besigtigelsesdato.split('-').reverse().join('-'):''],
+    ['Deltagere',[(row.deltagere_bl||[]).map(m=>m.navn).join(', '),row.ft].filter(Boolean).join(' · ')],['Dækning',o.daekning]];
+  if(row.input?.regresFelt) meta.push(['Regres',o.regresValg]);
+  doc.setFontSize(10);
+  meta.forEach(([k,val])=>{ doc.setFont('helvetica','bold'); doc.text(k,M,y); doc.setFont('helvetica','normal'); const l=doc.splitTextToSize(String(val||'-'),TW-34); doc.text(l,M+34,y); y+=l.length*4.6+1.4; });
+  y+=4;
+  const side=()=>{ if(y>276){ doc.addPage(); y=18; } };
+  function afsnit(titel, tekst){
+    side(); doc.setFont('helvetica','bold'); doc.setFontSize(11.5); doc.setTextColor(...red); doc.text(titel,M,y); y+=6;
+    doc.setFontSize(10); doc.setTextColor(20,20,20);
+    String(tekst||'-').split('\n').forEach(par=>{
+      const isQ=/^\d+\.\s/.test(par.trim()) && par.trim().endsWith('?') || /^9\.\s*Øvrige/.test(par.trim());
+      doc.setFont('helvetica', isQ?'bold':'normal');
+      if(!par.trim()){ y+=2.5; return; }
+      doc.splitTextToSize(par,TW).forEach(line=>{ side(); doc.text(line,M,y); y+=4.6; });
+    });
+    y+=5;
+  }
+  afsnit('Årsag til afgørelse', o.aarsag);
+  if(row.input?.regresFelt) afsnit('Kommentar til regres', o.regres);
+  afsnit('Skadebeskrivelse', o.skadebeskrivelse);
+  const n=doc.getNumberOfPages();
+  for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(110,110,110);
+    doc.text('Bjarne Larsen ApS • Tudvadvej 4 • 6040 Egtved • Tlf. 7555 2030 • bjarnelarsen.nu • CVR 39084414',W/2,288,{align:'center'});
+    doc.text(`Side ${i} af ${n}`,W-M,288,{align:'right'}); }
+  return doc;
+}
+const pdfNavn = row => `Besigtigelse ${row.skadenummer||''} ${row.adresse||''} ${row.selskab||''}`.replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim()+'.pdf';
+function rowFraSkaerm(){
+  const d=formData(); const c=sk();
+  return { fag:FAG[fag], selskab:selskabLabel(), skadenummer:d.skadenummer, adresse:d.adresse, besigtigelsesdato:d.dato||null,
+    deltagere_bl:valgteBL().map(m=>({navn:m.fuld,email:m.email})), ft:d.ft,
+    input:{...d, fagKey:fag, selskabKey:selskab, regresFelt:c.regresFelt}, output:readResult() };
+}
+$('btnPdf').onclick = () => { const row=rowFraSkaerm(); byggPdf(row).save(pdfNavn(row)); };
+
+// ── Gem og send ──
+$('btnGem').onclick = async () => {
+  const btn=$('btnGem'); btn.disabled=true;
+  try{
+    const row=rowFraSkaerm();
+    status('Gemmer…');
+    if(currentId){
+      await rest('besigtigelser?id=eq.'+currentId,'PATCH',row,'return=minimal');
+    } else {
+      const ins=await rest('besigtigelser','POST',{...row,oprettet_af_email:brugerEmail()},'return=representation');
+      currentId=ins[0].id;
+    }
+    gemKladde();
+    status('Gemt. Sender mail…');
+    const pdf=byggPdf(row).output('datauristring').split(',')[1];
+    const r=await call('/.netlify/functions/besigtigelse-send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:currentId,pdfBase64:pdf,filnavn:pdfNavn(row)})});
+    const txt=await r.text();
+    if(!r.ok) throw new Error('Rapporten er gemt, men mailen fejlede: '+txt);
+    const til=JSON.parse(txt).til||[];
+    status('Gemt og sendt til '+til.join(', '),'ok');
+  }catch(e){ status(e.message,'err'); }
+  finally{ btn.disabled=false; }
+};
+
+// ── Ny rapport (med fortryd) ──
+let fortryd=null;
+$('btnNy').onclick = () => {
+  fortryd = {fag,selskab,currentId,form:formData(),result:readResult()};
+  currentId=null; setForm(null); setResult(null); nulstilValg();
+  try{ localStorage.removeItem(KLADDE); }catch(e){}
+  status('Formularen er ryddet. ');
+  const b=document.createElement('button'); b.className='link'; b.textContent='Fortryd';
+  b.onclick=()=>{ indlaes(fortryd); status('Gendannet.'); };
+  $('status').appendChild(b);
+  window.scrollTo(0,0);
+};
+function indlaes(k){
+  if(!k) return;
+  currentId=k.currentId||null;
+  if(k.fag){ fag=k.fag; $('crumbFag').textContent=FAG[fag]; if(k.selskab) vaelgSelskab(k.selskab); else vaelgFag(k.fag); }
+  setForm(k.form); setResult(k.result); gemKladde();
+}
+
+// ── Historik ──
+let hist=[];
+async function hentHistorik(){
+  $('histListe').innerHTML='<p class="hint">Henter…</p>';
+  try{
+    hist=await rest('besigtigelser?select=id,created_at,skadenummer,adresse,selskab,fag,status,sendt_at,oprettet_af_email&order=created_at.desc&limit=300');
+    visHistorik();
+  }catch(e){ $('histListe').innerHTML='<p class="status err">Kunne ikke hente rapporter: '+e.message+'</p>'; }
+}
+function visHistorik(){
+  const q=v('soeg').toLowerCase();
+  const rows=hist.filter(r=>!q||[r.skadenummer,r.adresse,r.selskab,r.fag].join(' ').toLowerCase().includes(q));
+  if(!rows.length){ $('histListe').innerHTML='<p class="hint">'+(hist.length?'Ingen rapporter matcher søgningen.':'Der er ingen gemte rapporter endnu.')+'</p>'; return; }
+  $('histListe').innerHTML='';
+  rows.forEach(r=>{
+    const b=document.createElement('button'); b.className='item'; b.type='button';
+    const dt=new Date(r.created_at).toLocaleDateString('da-DK');
+    b.innerHTML=`<div><b>${esc(r.skadenummer||'—')}</b> · ${esc(r.adresse)}</div><span class="pill ${r.status==='sendt'?'sendt':'gemt'}">${r.status==='sendt'?'Sendt':'Ikke sendt'}</span>
+      <div class="meta">${esc(r.selskab)} · ${esc(r.fag)} · ${dt} · ${esc(r.oprettet_af_email)}</div>`;
+    b.onclick=()=>aabn(r.id);
+    $('histListe').appendChild(b);
+  });
+}
+async function aabn(id){
+  try{
+    const [r]=await rest('besigtigelser?id=eq.'+id+'&select=*');
+    if(!r) return;
+    visFane('ny');
+    indlaes({fag:r.input?.fagKey, selskab:r.input?.selskabKey, currentId:r.id, form:r.input, result:r.output});
+    status(`Åbnet rapport ${r.skadenummer||''}. Ændringer gemmes på samme rapport.`,'ok');
+  }catch(e){ status('Kunne ikke åbne: '+e.message,'err'); }
+}
+function visFane(f){
+  $('fane-ny').hidden=f!=='ny'; $('fane-hist').hidden=f!=='hist';
+  $('tabNy').classList.toggle('on',f==='ny'); $('tabHist').classList.toggle('on',f==='hist');
+  $('actions').hidden = f!=='ny' || !selskab;
+  if(f==='hist') hentHistorik();
+}
+
+// ── Kopiér ──
+document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{
+  const el=$(b.dataset.copy);
+  try{ await navigator.clipboard.writeText(el.value); }catch(e){ el.select(); document.execCommand('copy'); }
+  const o=b.textContent; b.textContent='Kopieret'; setTimeout(()=>b.textContent=o,1400);
+});
+
+// ── Start ──
+document.addEventListener('input', gemKladde);
+document.addEventListener('change', e=>{
+  if(e.target.name==='andreFag') $('andreFagValg').hidden = radio('andreFag')!=='Ja';
+  if(e.target.id==='aarsagType') visTip();
+  gemKladde();
+});
+$('soeg').addEventListener('input', visHistorik);
+
+(function start(){
+  session=loadSession();
+  if(!session?.access_token){ $('gate').hidden=false; return; }
+  $('app').hidden=false;
+  byggDeltagere();
+  const k=hentKladde();
+  if(k && (k.fag || k.form?.skadenummer)) indlaes(k); else setForm(null);
+})();
+</script>
+</body>
+</html>
