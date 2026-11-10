@@ -420,35 +420,27 @@ async function supaFetch(path){
 
 async function loadDashboard(){
   try{
-    // Hent alle sager
-    const sager = await supaFetch('/rest/v1/sager?select=id,sagsnr,overskrift,adresse,status,fag');
+    // Hent alle sager (tasks er JSON-streng i kolonnen tasks)
+    const sager = await supaFetch('/rest/v1/sager?select=ordrenummer,ordreoverskrift,adresse,by,postnr,ordrestatus,fag,tasks&limit=1000');
 
-    // Sagsoversigt
+    // Sagsoversigt — brug ordrestatus
     const alle    = sager.length;
-    const nyCount = sager.filter(s=>(s.status||'').toLowerCase()==='ny').length;
-    const igangCount = sager.filter(s=>(s.status||'').toLowerCase()==='igang'||
-                                        (s.status||'').toLowerCase()==='igangværende').length;
-    const faerdigCount = sager.filter(s=>(s.status||'').toLowerCase().startsWith('færdig')||
-                                          (s.status||'').toLowerCase()==='afsluttet').length;
+    const nyCount = sager.filter(s=>(s.ordrestatus||'').toLowerCase()==='ny').length;
+    const igangCount = sager.filter(s=>{
+      const st=(s.ordrestatus||'').toLowerCase();
+      return st==='igang'||st==='igangværende'||st.startsWith('igang');
+    }).length;
+    const faerdigCount = sager.filter(s=>{
+      const st=(s.ordrestatus||'').toLowerCase();
+      return st.startsWith('færdig')||st==='afsluttet'||st==='færdigmeldt';
+    }).length;
     document.getElementById('ss-alle').textContent    = alle;
     document.getElementById('ss-ny').textContent      = nyCount;
     document.getElementById('ss-igang').textContent   = igangCount;
     document.getElementById('ss-faerdig').textContent = faerdigCount;
 
-    // Byg sag-lookup: sagsnr -> {overskrift, adresse, fag}
-    const sagMap = {};
-    sager.forEach(s=>{ sagMap[s.sagsnr||s.id] = s; });
-
-    // Hent alle opgaver og filtrer til den indloggede bruger
-    const opgaver = await supaFetch('/rest/v1/opgaver?select=*');
-    const userEmail = currentUser.email||'';
-    const mineOpgaver = opgaver.filter(o=>{
-      const tasks = Array.isArray(o.tasks)?o.tasks:[];
-      return tasks.some(t=> !t.done && (t.user||'').toLowerCase()===userEmail.toLowerCase());
-    });
-
-    // Flatten: én post pr. opgave pr. sag der tilhører brugeren
-    // Vi leder efter tasks der ikke er done, tilhører user, og har en deadline
+    // Gennemgå tasks på alle sager (tasks er JSON-streng)
+    const userEmail = (currentUser.email||'').toLowerCase();
     const today = new Date(); today.setHours(0,0,0,0);
     const dag3  = new Date(today); dag3.setDate(dag3.getDate()+3);
 
@@ -456,20 +448,22 @@ async function loadDashboard(){
     let snart     = [];
     let totalMine = 0;
 
-    opgaver.forEach(sag => {
-      const tasks = Array.isArray(sag.tasks)?sag.tasks:[];
+    sager.forEach(sag => {
+      let tasks = [];
+      try{ tasks = JSON.parse(sag.tasks||'[]'); }catch(e){ tasks=[]; }
+      if(!Array.isArray(tasks)) tasks=[];
       tasks.forEach(t => {
         if(t.done) return;
-        if((t.user||'').toLowerCase()!==userEmail.toLowerCase()) return;
+        if((t.user||'').toLowerCase()!==userEmail) return;
         if(!t.deadline) return;
         totalMine++;
         const dl = new Date(t.deadline); dl.setHours(0,0,0,0);
-        const sagInfo = sagMap[sag.sagsnr||sag.id] || {};
+        const adresseFull = [sag.adresse, sag.postnr, sag.by].filter(Boolean).join(', ');
         const item = {
-          sagsnr: sag.sagsnr||sag.id||'–',
-          overskrift: sagInfo.overskrift||sag.sagsnr||'–',
-          adresse: sagInfo.adresse||'',
-          fag: sagInfo.fag||'',
+          sagsnr: sag.ordrenummer||'–',
+          overskrift: sag.ordreoverskrift||sag.ordrenummer||'–',
+          adresse: adresseFull,
+          fag: sag.fag||'',
           task: t.text||'',
           deadline: dl,
           deadlineStr: dl.toLocaleDateString('da-DK',{day:'numeric',month:'short'})
