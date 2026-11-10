@@ -5,28 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bjarne Larsen ApS · Platform</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --red:#B81C2B;--red-dark:#8e1520;--red-light:#fce8ea;
   --bg:#f4f1ec;--surface:#faf8f4;--text:#1a2024;--muted:#6b7a8d;--border:#ddd8ce;
   --white:#fff;--radius:4px;--radius-lg:8px;
   --sidebar:260px;
+  --overdue:#791f1f;--overdue-bg:#f09595;
+  --soon:#633806;--soon-bg:#FAC775;
 }
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
 
 /* ── LOGIN ── */
 .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
 .login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2.5rem;width:380px;max-width:90vw}
 .login-card img{height:48px;margin-bottom:2rem;display:block}
-.login-card h1{font-family:'DM Serif Display',serif;font-size:1.6rem;font-weight:400;margin-bottom:0.4rem}
+.login-card h1{font-size:1.5rem;font-weight:700;margin-bottom:0.4rem}
 .login-card p{font-size:0.88rem;color:var(--muted);margin-bottom:1.5rem}
 .field{margin-bottom:1rem}
-.field label{display:block;font-size:0.8rem;font-weight:500;margin-bottom:5px;color:var(--muted)}
-.field input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:0.95rem;background:var(--surface);color:var(--text)}
+.field label{display:block;font-size:0.8rem;font-weight:600;margin-bottom:5px;color:var(--muted)}
+.field input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);font-family:Arial,Helvetica,sans-serif;font-size:0.95rem;background:var(--surface);color:var(--text)}
 .field input:focus{outline:none;border-color:var(--red)}
 .login-err{background:var(--red-light);color:var(--red-dark);font-size:0.83rem;padding:8px 12px;border-radius:var(--radius);margin-bottom:1rem;display:none}
-.btn{font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;padding:9px 18px;border-radius:var(--radius);cursor:pointer;border:none;transition:all 0.15s;white-space:nowrap}
+.btn{font-family:Arial,Helvetica,sans-serif;font-size:0.85rem;font-weight:600;padding:9px 18px;border-radius:var(--radius);cursor:pointer;border:none;transition:all 0.15s;white-space:nowrap}
 .btn-primary{background:var(--red);color:#fff;width:100%;padding:11px}
 .btn-primary:hover{background:var(--red-dark)}
 .btn-primary:disabled{opacity:0.6;cursor:not-allowed}
@@ -36,53 +37,110 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .app.visible{display:flex}
 
 /* ── HEADER ── */
-header{background:var(--red);padding:0 1.5rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;flex-shrink:0}
-header img{height:40px;display:block}
-.header-right{display:flex;align-items:center;gap:10px}
-.user-badge{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:#fff;font-size:0.78rem;padding:5px 12px;border-radius:var(--radius)}
-.btn-logout{background:none;border:1px solid rgba(255,255,255,0.25);color:#fff;font-size:0.78rem;padding:5px 12px;border-radius:var(--radius);cursor:pointer;font-family:inherit}
+header{background:var(--red);padding:0 1rem;height:44px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;flex-shrink:0}
+header img{height:26px;display:block}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-right{display:flex;align-items:center;gap:8px}
+.btn-burger{background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:4px 6px;line-height:1;opacity:0.85;transition:opacity 0.15s}
+.btn-burger:hover{opacity:1}
+.user-badge{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:#fff;font-size:0.75rem;padding:3px 10px;border-radius:var(--radius)}
+.btn-logout{background:none;border:1px solid rgba(255,255,255,0.25);color:#fff;font-size:0.75rem;padding:3px 10px;border-radius:var(--radius);cursor:pointer;font-family:Arial,Helvetica,sans-serif}
 .btn-logout:hover{background:rgba(255,255,255,0.1)}
 
 /* ── BODY LAYOUT ── */
 .body-wrap{display:flex;flex:1;overflow:hidden}
 
 /* ── SIDEBAR ── */
-nav.sidebar{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;padding:1.25rem 0}
-
+nav.sidebar{
+  width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);
+  overflow-y:auto;flex-shrink:0;padding:1.25rem 0;
+  transition:width 0.2s ease, padding 0.2s ease;
+}
+nav.sidebar.collapsed{width:0;padding:0;overflow:hidden;border-right:none}
 .nav-category{margin-bottom:0.25rem}
-.nav-cat-btn{width:100%;background:none;border:none;padding:8px 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);transition:color 0.15s}
+.nav-cat-btn{width:100%;background:none;border:none;padding:8px 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:Arial,Helvetica,sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);transition:color 0.15s}
 .nav-cat-btn:hover{color:var(--text)}
 .nav-cat-btn .arrow{font-size:10px;transition:transform 0.2s;display:inline-block}
 .nav-cat-btn.open .arrow{transform:rotate(90deg)}
-
 .nav-items{display:none;padding-bottom:0.5rem}
 .nav-items.open{display:block}
-
 .nav-item{display:flex;align-items:center;gap:10px;padding:8px 1.25rem 8px 1.75rem;cursor:pointer;font-size:0.88rem;color:var(--text);text-decoration:none;border-left:3px solid transparent;transition:all 0.15s}
 .nav-item:hover{background:var(--red-light);color:var(--red)}
-.nav-item.active{background:var(--red-light);color:var(--red);border-left-color:var(--red);font-weight:500}
+.nav-item.active{background:var(--red-light);color:var(--red);border-left-color:var(--red);font-weight:600}
 .nav-item .icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
 .nav-item .label{flex:1}
-.nav-item .badge{background:var(--red);color:#fff;font-size:0.65rem;font-weight:600;padding:1px 6px;border-radius:10px}
-
+.nav-item .badge{background:var(--red);color:#fff;font-size:0.65rem;font-weight:700;padding:1px 6px;border-radius:10px}
 .nav-empty{padding:6px 1.25rem 6px 1.75rem;font-size:0.82rem;color:var(--muted);font-style:italic}
 
 /* ── MAIN CONTENT ── */
 main.content{flex:1;overflow:auto;display:flex;align-items:stretch}
 iframe#tool-frame{width:100%;border:none;flex:1;min-height:100%}
 
-/* ── WELCOME ── */
-.welcome{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem}
-.welcome-inner{text-align:center;max-width:480px}
-.welcome-inner h2{font-family:'DM Serif Display',serif;font-size:2rem;font-weight:400;margin-bottom:0.75rem}
-.welcome-inner p{color:var(--muted);font-size:0.95rem;line-height:1.6}
-.welcome-logo{height:60px;margin:0 auto 2rem;display:block;opacity:0.4}
-
 /* ── SPINNER ── */
 .spinner{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(244,241,236,0.7);z-index:9999;align-items:center;justify-content:center}
 .spinner.on{display:flex}
 .spin{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin 0.7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── FORSIDE DASHBOARD ── */
+#forside{flex:1;overflow-y:auto;display:none}
+#forside.visible{display:block}
+.forside-page{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+.forside-title{font-size:1.4rem;font-weight:700;margin-bottom:0.3rem}
+.forside-sub{color:var(--muted);font-size:0.88rem;margin-bottom:2rem}
+
+/* Sagsoversigt */
+.sag-stats{display:flex;gap:0.75rem;margin-bottom:2rem;flex-wrap:wrap}
+.sag-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0.9rem 1.25rem;flex:1;min-width:110px}
+.sag-stat-num{font-size:1.8rem;font-weight:300;line-height:1;margin-bottom:0.15rem;display:flex;align-items:center;gap:6px}
+.sag-stat-label{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-ny{background:#3b82f6}
+.dot-igang{background:#f59e0b}
+.dot-faerdig{background:#10b981}
+.dot-alle{background:#6b7a8d}
+
+/* Opgave stats */
+.op-stats{display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap}
+.op-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.5rem;flex:1;min-width:140px}
+.op-stat.red{border-left:3px solid var(--red)}
+.op-stat.orange{border-left:3px solid #e07b00}
+.op-stat.green{border-left:3px solid #2d6a4f}
+.op-stat-num{font-size:2rem;font-weight:300;line-height:1;margin-bottom:0.2rem}
+.op-stat-label{font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+
+/* Divider */
+.divider{border:none;border-top:1px solid var(--border);margin:0 0 2rem}
+
+/* Sektionsheader */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.section-title{font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted)}
+.section-link{font-size:0.8rem;color:var(--red);text-decoration:none;cursor:pointer;background:none;border:none;font-family:Arial,Helvetica,sans-serif}
+.section-link:hover{text-decoration:underline}
+.section-hint{font-size:0.8rem;color:var(--muted);margin-bottom:1rem}
+
+/* Opgave-kort */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:2.5rem}
+.opgave-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;display:flex;flex-direction:column;gap:0.4rem;cursor:pointer;transition:box-shadow 0.15s}
+.opgave-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.opgave-card.overdue{border-left:3px solid #c0392b;background:#fffafa}
+.opgave-card.soon{border-left:3px solid #e07b00;background:#fffcf5}
+.card-sag{font-size:0.72rem;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.card-sagnr{font-weight:700;color:var(--text)}
+.card-adresse{font-size:0.75rem;color:var(--muted)}
+.card-task{font-size:0.9rem;font-weight:600;line-height:1.35}
+.card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:0.25rem}
+.deadline-pill{font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:20px}
+.overdue .deadline-pill{background:var(--overdue-bg);color:var(--overdue)}
+.soon .deadline-pill{background:var(--soon-bg);color:var(--soon)}
+.card-fag{font-size:0.68rem;padding:2px 7px;border-radius:20px;font-weight:600;margin-left:auto}
+.fag-mu{background:#dbeafe;color:#1e40af}
+.fag-to{background:#d1fae5;color:#065f46}
+.fag-ma{background:#ede9fe;color:#6b21a8}
+.fag-kl{background:#fef3cd;color:#92510a}
+
+/* Tom tilstand */
+.empty-msg{color:var(--muted);font-size:0.9rem;padding:1rem 0;margin-bottom:2rem}
 </style>
 </head>
 <body>
@@ -107,7 +165,10 @@ iframe#tool-frame{width:100%;border:none;flex:1;min-height:100%}
 <div class="app" id="app">
 
   <header>
-    <img src="https://eybaeyemhnobxghxmtgx.supabase.co/storage/v1/object/public/assets/logo.png" onerror="this.style.display='none'" alt="Bjarne Larsen ApS">
+    <div class="header-left">
+      <button class="btn-burger" id="burgerBtn" onclick="toggleSidebar()" title="Vis/skjul menu">☰</button>
+      <img src="https://eybaeyemhnobxghxmtgx.supabase.co/storage/v1/object/public/assets/logo.png" onerror="this.style.display='none'" alt="Bjarne Larsen ApS">
+    </div>
     <div class="header-right">
       <span class="user-badge" id="userBadge"></span>
       <button class="btn-logout" onclick="doLogout()">Log ud</button>
@@ -117,22 +178,56 @@ iframe#tool-frame{width:100%;border:none;flex:1;min-height:100%}
   <div class="body-wrap">
 
     <!-- SIDEBAR -->
-    <nav class="sidebar" id="sidebar">
-      <!-- Bygges af JS -->
-    </nav>
+    <nav class="sidebar" id="sidebar"></nav>
 
     <!-- CONTENT -->
     <main class="content" id="mainContent">
-      <div class="welcome" id="welcome">
-        <div class="welcome-inner">
-          <img class="welcome-logo" src="https://eybaeyemhnobxghxmtgx.supabase.co/storage/v1/object/public/assets/logo.png" onerror="this.style.display='none'">
-          <h2>Vælg et værktøj</h2>
-          <p>Brug menuen til venstre til at åbne et af platformens værktøjer.</p>
+
+      <!-- FORSIDE DASHBOARD -->
+      <div id="forside">
+        <div class="forside-page">
+          <div class="forside-title" id="forsideTitle">God dag 👋</div>
+          <div class="forside-sub" id="forsideSub">Henter overblik…</div>
+
+          <!-- Sagsoversigt -->
+          <div class="sag-stats" id="sagStats">
+            <div class="sag-stat"><div class="sag-stat-num"><span class="dot dot-alle"></span><span id="ss-alle">–</span></div><div class="sag-stat-label">Alle sager</div></div>
+            <div class="sag-stat"><div class="sag-stat-num"><span class="dot dot-ny"></span><span id="ss-ny">–</span></div><div class="sag-stat-label">Ny</div></div>
+            <div class="sag-stat"><div class="sag-stat-num"><span class="dot dot-igang"></span><span id="ss-igang">–</span></div><div class="sag-stat-label">Igang</div></div>
+            <div class="sag-stat"><div class="sag-stat-num"><span class="dot dot-faerdig"></span><span id="ss-faerdig">–</span></div><div class="sag-stat-label">Færdigmeldt</div></div>
+          </div>
+
+          <hr class="divider">
+
+          <!-- Opgave-stats -->
+          <div class="op-stats">
+            <div class="op-stat red"><div class="op-stat-num" id="os-forfaldne">–</div><div class="op-stat-label">Mine forfaldne opgaver</div></div>
+            <div class="op-stat orange"><div class="op-stat-num" id="os-snart">–</div><div class="op-stat-label">Forfalder snart (3 dage)</div></div>
+            <div class="op-stat green"><div class="op-stat-num" id="os-total">–</div><div class="op-stat-label">Mine opgaver i alt</div></div>
+          </div>
+
+          <!-- Forfaldne opgaver -->
+          <div class="section-header">
+            <span class="section-title">🔴 Mine forfaldne opgaver</span>
+            <button class="section-link" onclick="openTool({id:'sagstyring',url:'sagstyring.html'})">Se alle i sagstyring →</button>
+          </div>
+          <div class="cards" id="cards-forfaldne"></div>
+
+          <!-- Snart forfaldne -->
+          <div class="section-header">
+            <span class="section-title">🟡 Mine opgaver der forfalder inden for 3 dage</span>
+            <button class="section-link" id="btn-se-alle-snart" onclick="openTool({id:'sagstyring',url:'sagstyring.html'})" style="display:none"></button>
+          </div>
+          <p class="section-hint" id="hint-snart" style="display:none"></p>
+          <div class="cards" id="cards-snart"></div>
+
         </div>
       </div>
-      <iframe id="tool-frame" style="display:none" src="about:blank"></iframe>
-    </main>
 
+      <!-- TOOL IFRAME -->
+      <iframe id="tool-frame" style="display:none" src="about:blank"></iframe>
+
+    </main>
   </div>
 </div>
 
@@ -140,48 +235,28 @@ iframe#tool-frame{width:100%;border:none;flex:1;min-height:100%}
 const SUPA_URL = 'https://eybaeyemhnobxghxmtgx.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5YmFleWVtaG5vYnhnaHhtdGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MjE5NTgsImV4cCI6MjA5MzA5Nzk1OH0.IxkQDijl34ETFt-2gKVb4Ajve6T7PQxxwbiCRrBISYc';
 
+// Fag-mapping til badge-farve
+const FAG_CLASS = { 'murer':'fag-mu','maler':'fag-ma','tømrer':'fag-to','kloak':'fag-kl' };
+function fagClass(f){ return FAG_CLASS[(f||'').toLowerCase()] || ''; }
+function fagLabel(f){ if(!f) return ''; return f.charAt(0).toUpperCase()+f.slice(1).toLowerCase(); }
+
 // ── Menustruktur ──
-// Tilføj nye værktøjer her — ingen andre steder skal ændres
 const MENU = [
   {
-    id: 'faelles',
-    label: 'Fælles',
-    open: true,
+    id: 'faelles', label: 'Fælles', open: true,
     items: [
       { id: 'sagstyring', label: 'Sagstyring', icon: '📋', url: 'sagstyring.html' },
-      { id: 'bemanding', label: 'Bemandingsplan', icon: '👷', url: 'bemanding.html' },
     ]
   },
-  {
-    id: 'murer',
-    label: 'Murer',
-    open: false,
-    items: []
-  },
-  {
-    id: 'toemrer',
-    label: 'Tømrer',
-    open: false,
-    items: []
-  },
-  {
-    id: 'maler',
-    label: 'Maler',
-    open: false,
-    items: []
-  },
-  {
-    id: 'kloak',
-    label: 'Kloak',
-    open: false,
-    items: []
-  }
+  { id: 'murer',   label: 'Murer',   open: false, items: [] },
+  { id: 'toemrer', label: 'Tømrer',  open: false, items: [] },
+  { id: 'maler',   label: 'Maler',   open: false, items: [] },
+  { id: 'kloak',   label: 'Kloak',   open: false, items: [] }
 ];
 
 // ── Session ──
 let currentUser = null;
 const SESSION_KEY = 'bl_session';
-
 function saveSession(u){ try{ localStorage.setItem(SESSION_KEY, JSON.stringify(u)); }catch(e){} }
 function loadSession(){ try{ const s=localStorage.getItem(SESSION_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
 function clearSession(){ try{ localStorage.removeItem(SESSION_KEY); }catch(e){} }
@@ -228,7 +303,6 @@ async function doLogin(){
     btn.disabled=false; btn.textContent='Log ind';
   }
 }
-
 document.getElementById('loginPw').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 document.getElementById('loginEmail').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('loginPw').focus(); });
 
@@ -245,7 +319,7 @@ async function doLogout(){
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('tool-frame').src='about:blank';
   document.getElementById('tool-frame').style.display='none';
-  document.getElementById('welcome').style.display='flex';
+  document.getElementById('forside').classList.remove('visible');
 }
 
 // ── App vis ──
@@ -253,52 +327,49 @@ function showApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').classList.add('visible');
   document.getElementById('userBadge').textContent = currentUser.email;
+  try{ const s=localStorage.getItem('bl_sidebar'); if(s==='0'){ sidebarOpen=false; document.getElementById('sidebar').classList.add('collapsed'); } }catch(e){}
   buildMenu();
+  showForside();
+}
+
+// ── Sidebar toggle ──
+let sidebarOpen = true;
+function toggleSidebar(){
+  sidebarOpen = !sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
+  try{ localStorage.setItem('bl_sidebar', sidebarOpen?'1':'0'); }catch(e){}
 }
 
 // ── Menu ──
 let activeItem = null;
-
 function buildMenu(){
   const nav = document.getElementById('sidebar');
   nav.innerHTML = '';
   MENU.forEach(cat => {
     const wrap = document.createElement('div');
     wrap.className = 'nav-category';
-
     const btn = document.createElement('button');
     btn.className = 'nav-cat-btn' + (cat.open?' open':'');
     btn.innerHTML = `<span>${cat.label}</span><span class="arrow">▶</span>`;
-    btn.onclick = () => {
-      cat.open = !cat.open;
-      btn.classList.toggle('open', cat.open);
-      list.classList.toggle('open', cat.open);
-    };
+    btn.onclick = () => { cat.open=!cat.open; btn.classList.toggle('open',cat.open); list.classList.toggle('open',cat.open); };
     wrap.appendChild(btn);
-
     const list = document.createElement('div');
     list.className = 'nav-items' + (cat.open?' open':'');
-
-    if(cat.items.length === 0){
+    if(cat.items.length===0){
       const empty = document.createElement('div');
-      empty.className = 'nav-empty';
-      empty.textContent = 'Ingen værktøjer endnu';
+      empty.className='nav-empty'; empty.textContent='Ingen værktøjer endnu';
       list.appendChild(empty);
     } else {
       cat.items.forEach(item => {
         const a = document.createElement('div');
-        a.className = 'nav-item' + (activeItem===item.id?' active':'');
+        a.className = 'nav-item'+(activeItem===item.id?' active':'');
         a.dataset.id = item.id;
         a.innerHTML = `<span class="icon">${item.icon||'🔧'}</span><span class="label">${item.label}</span>${item.badge?`<span class="badge">${item.badge}</span>`:''}`;
-        if(item.url){
-          a.onclick = () => openTool(item);
-        } else {
-          a.style.opacity='0.5'; a.style.cursor='default';
-        }
+        if(item.url){ a.onclick = () => openTool(item); }
+        else { a.style.opacity='0.5'; a.style.cursor='default'; }
         list.appendChild(a);
       });
     }
-
     wrap.appendChild(list);
     nav.appendChild(wrap);
   });
@@ -306,14 +377,177 @@ function buildMenu(){
 
 function openTool(item){
   if(!item.url) return;
-  // Sæt session i sessionStorage så child-siden kan læse den
   try{ sessionStorage.setItem('bl_parent_session', JSON.stringify(currentUser)); }catch(e){}
   activeItem = item.id;
   buildMenu();
-  document.getElementById('welcome').style.display='none';
+  document.getElementById('forside').classList.remove('visible');
   const frame = document.getElementById('tool-frame');
   frame.style.display='block';
   frame.src = item.url;
+}
+
+// ── FORSIDE DASHBOARD ──
+function showForside(){
+  activeItem = null;
+  buildMenu();
+  document.getElementById('tool-frame').style.display='none';
+  document.getElementById('tool-frame').src='about:blank';
+  document.getElementById('forside').classList.add('visible');
+
+  // Hilsen med tid på dagen
+  const h = new Date().getHours();
+  const greeting = h<12?'God morgen':h<17?'God eftermiddag':'God aften';
+  const firstName = (currentUser.email||'').split('@')[0].split('.')[0];
+  const name = firstName.charAt(0).toUpperCase()+firstName.slice(1);
+  document.getElementById('forsideTitle').textContent = greeting+', '+name+' 👋';
+
+  const dage = ['søndag','mandag','tirsdag','onsdag','torsdag','fredag','lørdag'];
+  const mdr  = ['januar','februar','marts','april','maj','juni','juli','august','september','oktober','november','december'];
+  const now  = new Date();
+  document.getElementById('forsideSub').textContent =
+    dage[now.getDay()]+' '+now.getDate()+'. '+mdr[now.getMonth()]+' '+now.getFullYear()+' · Her er dit overblik for i dag';
+
+  loadDashboard();
+}
+
+async function supaFetch(path){
+  const r = await fetch(SUPA_URL+path,{
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+currentUser.access_token}
+  });
+  if(!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function loadDashboard(){
+  try{
+    // Hent alle sager
+    const sager = await supaFetch('/rest/v1/sager?select=id,sagsnr,overskrift,adresse,status,fag');
+
+    // Sagsoversigt
+    const alle    = sager.length;
+    const nyCount = sager.filter(s=>(s.status||'').toLowerCase()==='ny').length;
+    const igangCount = sager.filter(s=>(s.status||'').toLowerCase()==='igang'||
+                                        (s.status||'').toLowerCase()==='igangværende').length;
+    const faerdigCount = sager.filter(s=>(s.status||'').toLowerCase().startsWith('færdig')||
+                                          (s.status||'').toLowerCase()==='afsluttet').length;
+    document.getElementById('ss-alle').textContent    = alle;
+    document.getElementById('ss-ny').textContent      = nyCount;
+    document.getElementById('ss-igang').textContent   = igangCount;
+    document.getElementById('ss-faerdig').textContent = faerdigCount;
+
+    // Byg sag-lookup: sagsnr -> {overskrift, adresse, fag}
+    const sagMap = {};
+    sager.forEach(s=>{ sagMap[s.sagsnr||s.id] = s; });
+
+    // Hent alle opgaver og filtrer til den indloggede bruger
+    const opgaver = await supaFetch('/rest/v1/opgaver?select=*');
+    const userEmail = currentUser.email||'';
+    const mineOpgaver = opgaver.filter(o=>{
+      const tasks = Array.isArray(o.tasks)?o.tasks:[];
+      return tasks.some(t=> !t.done && (t.user||'').toLowerCase()===userEmail.toLowerCase());
+    });
+
+    // Flatten: én post pr. opgave pr. sag der tilhører brugeren
+    // Vi leder efter tasks der ikke er done, tilhører user, og har en deadline
+    const today = new Date(); today.setHours(0,0,0,0);
+    const dag3  = new Date(today); dag3.setDate(dag3.getDate()+3);
+
+    let forfaldne = [];
+    let snart     = [];
+    let totalMine = 0;
+
+    opgaver.forEach(sag => {
+      const tasks = Array.isArray(sag.tasks)?sag.tasks:[];
+      tasks.forEach(t => {
+        if(t.done) return;
+        if((t.user||'').toLowerCase()!==userEmail.toLowerCase()) return;
+        if(!t.deadline) return;
+        totalMine++;
+        const dl = new Date(t.deadline); dl.setHours(0,0,0,0);
+        const sagInfo = sagMap[sag.sagsnr||sag.id] || {};
+        const item = {
+          sagsnr: sag.sagsnr||sag.id||'–',
+          overskrift: sagInfo.overskrift||sag.sagsnr||'–',
+          adresse: sagInfo.adresse||'',
+          fag: sagInfo.fag||'',
+          task: t.text||'',
+          deadline: dl,
+          deadlineStr: dl.toLocaleDateString('da-DK',{day:'numeric',month:'short'})
+        };
+        if(dl<today)       forfaldne.push(item);
+        else if(dl<=dag3)  snart.push(item);
+      });
+    });
+
+    // Sorter ældste forfaldne først, snart efter deadline
+    forfaldne.sort((a,b)=>a.deadline-b.deadline);
+    snart.sort((a,b)=>a.deadline-b.deadline);
+
+    // Opdater tæller-bokse
+    document.getElementById('os-forfaldne').textContent = forfaldne.length;
+    document.getElementById('os-snart').textContent     = snart.length;
+    document.getElementById('os-total').textContent     = totalMine;
+
+    // Render forfaldne (alle)
+    renderKort('cards-forfaldne', forfaldne, 'overdue', 'Forfald');
+
+    // Render snart (maks 4, vis "Se alle X" hvis flere)
+    const MAX_SNART = 4;
+    renderKort('cards-snart', snart.slice(0,MAX_SNART), 'soon', 'Forfalder');
+    const btnSeAlle = document.getElementById('btn-se-alle-snart');
+    const hintSnart = document.getElementById('hint-snart');
+    if(snart.length>MAX_SNART){
+      btnSeAlle.textContent = 'Se alle '+snart.length+' →';
+      btnSeAlle.style.display='inline';
+      hintSnart.textContent = 'Viser de '+MAX_SNART+' nærmeste — klik "Se alle" for at se resten i sagstyringen.';
+      hintSnart.style.display='block';
+    } else {
+      btnSeAlle.style.display='none';
+      hintSnart.style.display='none';
+    }
+
+  }catch(e){
+    console.error('Dashboard fejl:', e);
+  }
+}
+
+function renderKort(containerId, items, cls, prefix){
+  const el = document.getElementById(containerId);
+  if(!items.length){
+    el.innerHTML = '<p class="empty-msg">Ingen '+(cls==='overdue'?'forfaldne':'snart forfaldne')+' opgaver 🎉</p>';
+    return;
+  }
+  el.innerHTML = items.map(item=>`
+    <div class="opgave-card ${cls}" onclick="aabSag('${item.sagsnr}')">
+      <div class="card-sag">
+        <span class="card-sagnr">${item.sagsnr}</span>
+        <span>·</span>
+        <span>${escHtml(item.overskrift)}</span>
+        ${item.fag?`<span class="card-fag ${fagClass(item.fag)}" style="margin-left:auto">${fagLabel(item.fag)}</span>`:''}
+      </div>
+      ${item.adresse?`<div class="card-adresse">📍 ${escHtml(item.adresse)}</div>`:''}
+      <div class="card-task">${escHtml(item.task)}</div>
+      <div class="card-meta">
+        <span class="deadline-pill">${prefix} ${item.deadlineStr}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function aabSag(sagsnr){
+  // Åbn sagstyring og forsøg at navigere til den specifikke sag
+  try{ sessionStorage.setItem('bl_parent_session', JSON.stringify(currentUser)); }catch(e){}
+  try{ sessionStorage.setItem('bl_open_sag', sagsnr); }catch(e){}
+  activeItem = 'sagstyring';
+  buildMenu();
+  document.getElementById('forside').classList.remove('visible');
+  const frame = document.getElementById('tool-frame');
+  frame.style.display='block';
+  frame.src = 'sagstyring.html';
+}
+
+function escHtml(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── Init ──
@@ -322,7 +556,6 @@ function openTool(item){
   const saved = loadSession();
   if(saved?.access_token){
     currentUser = saved;
-    // Valider token
     try{
       const r = await fetch(SUPA_URL+'/auth/v1/user',{
         headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+saved.access_token}
