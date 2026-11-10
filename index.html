@@ -167,7 +167,7 @@ iframe#tool-frame{width:100%;border:none;flex:1;min-height:100%}
   <header>
     <div class="header-left">
       <button class="btn-burger" id="burgerBtn" onclick="toggleSidebar()" title="Vis/skjul menu">☰</button>
-      <img src="https://eybaeyemhnobxghxmtgx.supabase.co/storage/v1/object/public/assets/logo.png" onerror="this.style.display='none'" alt="Bjarne Larsen ApS">
+      <img id="headerLogo" src="https://eybaeyemhnobxghxmtgx.supabase.co/storage/v1/object/public/assets/logo_white.png" onerror="this.src='https://eybaeyemhnobxghxmtgx.supabase.co/storage/v1/object/public/assets/logo.png';this.onerror=null" alt="Bjarne Larsen ApS">
     </div>
     <div class="header-right">
       <span class="user-badge" id="userBadge"></span>
@@ -234,6 +234,19 @@ iframe#tool-frame{width:100%;border:none;flex:1;min-height:100%}
 <script>
 const SUPA_URL = 'https://eybaeyemhnobxghxmtgx.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5YmFleWVtaG5vYnhnaHhtdGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MjE5NTgsImV4cCI6MjA5MzA5Nzk1OH0.IxkQDijl34ETFt-2gKVb4Ajve6T7PQxxwbiCRrBISYc';
+
+// Email → navn mapping (samme som sagstyring)
+const EMAIL_NAVN = {
+  'bl@bjarnelarsen.nu':  'Bjarne Brødsgaard Larsen',
+  'bs@bjarnelarsen.nu':  'Bjarke Sørensen',
+  'hse@bjarnelarsen.nu': 'Henrik Eriksen',
+  'ls@bjarnelarsen.nu':  'Lasse Skou',
+  'mv@bjarnelarsen.nu':  'Marius Vilsted Meister',
+  'mrk@bjarnelarsen.nu': 'Morten Ratke Kristensen',
+  'shl@bjarnelarsen.nu': 'Simon Larsen',
+  'sop@bjarnelarsen.nu': 'Simon Østergaard Poulsen',
+  'tgb@bjarnelarsen.nu': 'Tanja Busch',
+};
 
 // Fag-mapping til badge-farve
 const FAG_CLASS = { 'murer':'fag-mu','maler':'fag-ma','tømrer':'fag-to','kloak':'fag-kl' };
@@ -423,14 +436,22 @@ async function loadDashboard(){
     // Hent alle sager (tasks er JSON-streng i kolonnen tasks)
     const sager = await supaFetch('/rest/v1/sager?select=ordrenummer,ordreoverskrift,adresse,by,postnr,ordrestatus,fag,tasks&limit=1000');
 
-    // Sagsoversigt — brug ordrestatus
-    const alle    = sager.length;
-    const nyCount = sager.filter(s=>(s.ordrestatus||'').toLowerCase()==='ny').length;
-    const igangCount = sager.filter(s=>{
+    // Find navn på indlogget bruger til filtrering på ansvarlig_medarbejder
+    const userEmail = (currentUser.email||'').toLowerCase();
+    const userNavn  = EMAIL_NAVN[userEmail] || '';
+
+    // Sagsoversigt — kun sager hvor den indloggede er ansvarlig
+    const mineSager = userNavn
+      ? sager.filter(s=>(s.ansvarlig_medarbejder||'')=== userNavn)
+      : sager; // fallback: vis alle hvis navn ikke kendes
+
+    const alle         = mineSager.length;
+    const nyCount      = mineSager.filter(s=>(s.ordrestatus||'').toLowerCase()==='ny').length;
+    const igangCount   = mineSager.filter(s=>{
       const st=(s.ordrestatus||'').toLowerCase();
       return st==='igang'||st==='igangværende'||st.startsWith('igang');
     }).length;
-    const faerdigCount = sager.filter(s=>{
+    const faerdigCount = mineSager.filter(s=>{
       const st=(s.ordrestatus||'').toLowerCase();
       return st.startsWith('færdig')||st==='afsluttet'||st==='færdigmeldt';
     }).length;
@@ -440,7 +461,6 @@ async function loadDashboard(){
     document.getElementById('ss-faerdig').textContent = faerdigCount;
 
     // Gennemgå tasks på alle sager (tasks er JSON-streng)
-    const userEmail = (currentUser.email||'').toLowerCase();
     const today = new Date(); today.setHours(0,0,0,0);
     const dag3  = new Date(today); dag3.setDate(dag3.getDate()+3);
 
