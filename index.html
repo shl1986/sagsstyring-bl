@@ -482,6 +482,8 @@ async function loadDashboard(){
     let totalMine = 0;
 
     sager.forEach(sag => {
+      // Spring arkiverede sager over — samme som sagstyringen gør
+      if((sag.ordrestatus||'').toLowerCase()==='arkiveret') return;
       let tasks = [];
       try{ tasks = JSON.parse(sag.tasks||'[]'); }catch(e){ tasks=[]; }
       if(!Array.isArray(tasks)) tasks=[];
