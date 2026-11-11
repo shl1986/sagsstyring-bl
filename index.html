@@ -119,22 +119,25 @@ iframe#tool-frame{width:100%;border:none;flex:1;min-height:100%}
 .section-link:hover{text-decoration:underline}
 .section-hint{font-size:0.8rem;color:var(--muted);margin-bottom:1rem}
 
-/* Opgave-kort */
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:2.5rem}
-.opgave-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;display:flex;flex-direction:column;gap:0.4rem;cursor:pointer;transition:box-shadow 0.15s}
-.opgave-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-.opgave-card.overdue{border-left:3px solid #c0392b;background:#fffafa}
-.opgave-card.soon{border-left:3px solid #e07b00;background:#fffcf5}
+/* Kunde-kort (grupperingsvisning) */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-bottom:2.5rem}
+.kunde-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem;display:flex;flex-direction:column;gap:0.5rem;cursor:pointer;transition:box-shadow 0.15s}
+.kunde-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.kunde-card.overdue{border-left:3px solid #c0392b;background:#fffafa}
+.kunde-card.soon{border-left:3px solid #e07b00;background:#fffcf5}
 .card-sag{font-size:0.72rem;color:var(--muted);display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap}
 .card-sagnr{font-weight:700;color:var(--text);flex-shrink:0}
 .card-overskrift{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .card-adresse{font-size:0.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-task{font-size:0.9rem;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:0.35rem;gap:6px}
-.deadline-pill{font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:20px;flex-shrink:0}
+.card-tasks{display:flex;flex-direction:column;gap:0.35rem;margin-top:0.15rem}
+.task-row{display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-top:1px solid var(--border)}
+.task-row:first-child{border-top:none}
+.task-text{font-size:0.88rem;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task-meta{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.deadline-pill{font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:20px;flex-shrink:0}
 .overdue .deadline-pill{background:var(--overdue-bg);color:var(--overdue)}
 .soon .deadline-pill{background:var(--soon-bg);color:var(--soon)}
-.card-fag{font-size:0.68rem;padding:2px 7px;border-radius:20px;font-weight:600;flex-shrink:0}
+.card-fag{font-size:0.65rem;padding:2px 6px;border-radius:20px;font-weight:600;flex-shrink:0}
 .fag-mu{background:#dbeafe;color:#1e40af}
 .fag-to{background:#d1fae5;color:#065f46}
 .fag-ma{background:#ede9fe;color:#6b21a8}
@@ -541,18 +544,35 @@ function renderKort(containerId, items, cls, prefix){
     el.innerHTML = '<p class="empty-msg">Ingen '+(cls==='overdue'?'forfaldne':'snart forfaldne')+' opgaver 🎉</p>';
     return;
   }
-  el.innerHTML = items.map(item=>`
-    <div class="opgave-card ${cls}" onclick="aabSag('${item.sagsnr}')">
+  // Gruppér per sag (sagsnr)
+  const grupper = [];
+  const sagMap  = {};
+  items.forEach(item => {
+    if(!sagMap[item.sagsnr]){
+      const g = {sagsnr:item.sagsnr, overskrift:item.overskrift, adresse:item.adresse, fag:item.fag, tasks:[]};
+      sagMap[item.sagsnr] = g;
+      grupper.push(g);
+    }
+    sagMap[item.sagsnr].tasks.push({text:item.task, deadlineStr:item.deadlineStr, fag:item.fag});
+  });
+  el.innerHTML = grupper.map(g=>`
+    <div class="kunde-card ${cls}" onclick="aabSag('${g.sagsnr}')">
       <div class="card-sag">
-        <span class="card-sagnr">${item.sagsnr}</span>
+        <span class="card-sagnr">${g.sagsnr}</span>
         <span style="flex-shrink:0">·</span>
-        <span class="card-overskrift">${escHtml(item.overskrift)}</span>
+        <span class="card-overskrift">${escHtml(g.overskrift)}</span>
       </div>
-      ${item.adresse?`<div class="card-adresse">📍 ${escHtml(item.adresse)}</div>`:''}
-      <div class="card-task">${escHtml(item.task)}</div>
-      <div class="card-meta">
-        <span class="deadline-pill">${prefix} ${item.deadlineStr}</span>
-        ${item.fag?`<span class="card-fag ${fagClass(item.fag)}">${fagLabel(item.fag)}</span>`:''}
+      ${g.adresse?`<div class="card-adresse">📍 ${escHtml(g.adresse)}</div>`:''}
+      <div class="card-tasks">
+        ${g.tasks.map(t=>`
+          <div class="task-row">
+            <span class="task-text">${escHtml(t.text)}</span>
+            <div class="task-meta">
+              <span class="deadline-pill">${prefix} ${t.deadlineStr}</span>
+              ${t.fag?`<span class="card-fag ${fagClass(t.fag)}">${fagLabel(t.fag)}</span>`:''}
+            </div>
+          </div>
+        `).join('')}
       </div>
     </div>
   `).join('');
