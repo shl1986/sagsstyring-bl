@@ -42,14 +42,27 @@ function sendMail(payload){
   });
 }
 
-function fmtDato(str){ if(!str) return ''; const [y,m,d]=str.split('-'); return `${d}/${m}/${y}`; }
+function fmtDato(str){
+  if(!str) return '';
+  // Understøt både YYYY-MM-DD og DD/MM/YY(YY)
+  if(str.includes('-')){
+    const [y,m,d] = str.split('-');
+    if(!y||!m||!d) return str;
+    return `${d}/${m}/${y}`;
+  }
+  if(str.includes('/')){
+    // Allerede formateret som DD/MM/... — returner som-er
+    return str;
+  }
+  return str;
+}
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 exports.handler = async () => {
   try {
     const supaHost = SUPA_URL.replace('https://','');
     const res = await httpsGet(supaHost,
-      '/rest/v1/sager?select=ordrenummer,kundenavn,adresse,by,postnr,ordreoverskrift,ansvarlig_medarbejder,tasks',
+      '/rest/v1/sager?select=ordrenummer,kundenavn,adresse,by,postnr,ordreoverskrift,ansvarlig_medarbejder,tasks,ordrestatus',
       { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}` }
     );
     if(res.status !== 200){ console.error('Supabase fejl:', res.body); return { statusCode: 500, body: 'Supabase fejl' }; }
@@ -61,6 +74,8 @@ exports.handler = async () => {
 
     const reminders = {};
     for(const sag of sager){
+      // Spring arkiverede sager over
+      if((sag.ordrestatus||'').toLowerCase() === 'arkiveret') continue;
       let tasks = [];
       try { tasks = JSON.parse(sag.tasks||'[]'); } catch(e){ continue; }
       for(const task of tasks){
